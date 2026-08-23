@@ -27,9 +27,7 @@ export function CartDrawer() {
               Start with a jar of Mango Avakaya — it goes with everything.
             </p>
             <Button className="mt-2" onClick={() => setOpen(false)} asChild>
-              <Link to="/category/$categorySlug" params={{ categorySlug: "veg-pickles" }}>
-                Browse pickles
-              </Link>
+              <Link to="/shop">Browse Products</Link>
             </Button>
           </div>
         ) : (
@@ -37,7 +35,12 @@ export function CartDrawer() {
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {items.map((i) => (
                 <div key={i.key} className="flex gap-3 rounded-lg border border-border bg-card p-3">
-                  <img src={i.image} alt="" loading="lazy" className="size-16 rounded-md object-cover" />
+                  <img
+                    src={i.image}
+                    alt=""
+                    loading="lazy"
+                    className="size-16 rounded-md object-cover"
+                  />
                   <div className="flex-1">
                     <p className="text-sm font-semibold leading-tight">{i.name}</p>
                     <p className="text-xs text-muted-foreground">{i.weight}</p>
@@ -78,7 +81,9 @@ export function CartDrawer() {
             <div className="space-y-3 border-t border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Subtotal</span>
-                <span className="font-display text-xl font-bold text-primary">{formatINR(subtotal)}</span>
+                <span className="font-display text-xl font-bold text-primary">
+                  {formatINR(subtotal)}
+                </span>
               </div>
               <Button variant="gold" className="w-full" asChild>
                 <a href={whatsappUrl} target="_blank" rel="noreferrer">

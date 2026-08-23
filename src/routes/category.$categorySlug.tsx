@@ -12,10 +12,15 @@ export const Route = createFileRoute("/category/$categorySlug")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Category not found — Kala Flavours" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Category not found — PickleMart" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const { category } = loaderData;
-    const title = `${category.name} — Kala Flavours`;
+    const title = `${category.name} — PickleMart`;
     return {
       meta: [
         { title },
@@ -60,7 +65,11 @@ function CategoryPage() {
       </header>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button variant={vegOnly ? "default" : "outline"} size="sm" onClick={() => setVegOnly((v) => !v)}>
+        <Button
+          variant={vegOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => setVegOnly((v) => !v)}
+        >
           Veg only
         </Button>
         <select
@@ -82,7 +91,7 @@ function CategoryPage() {
           No products here yet. More recipes are being packed.
         </p>
       ) : (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
           {items.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

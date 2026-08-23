@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, Star } from "lucide-react";
 import { toast } from "sonner";
 import { formatINR, type Product, type WeightVariant } from "@/data/products";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -21,11 +22,23 @@ export function VegBadge({ isVeg }: { isVeg: boolean }) {
   );
 }
 
+export function RatingStars({ rating, reviewCount }: { rating: number; reviewCount?: number }) {
+  return (
+    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+      <Star className="size-3 fill-accent text-accent" />
+      <span className="font-medium text-foreground">{rating.toFixed(1)}</span>
+      {reviewCount !== undefined && <span>({reviewCount})</span>}
+    </span>
+  );
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const [variant, setVariant] = useState<WeightVariant>(
     product.variants[0] ?? { label: "250g", price: product.price },
   );
   const { addItem, setOpen } = useCart();
+  const { isWishlisted, toggle } = useWishlist();
+  const wishlisted = isWishlisted(product.id);
 
   return (
     <article className="card-lift group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-warm">
@@ -42,16 +55,47 @@ export function ProductCard({ product }: { product: Product }) {
           height={800}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {product.bestseller && (
-          <span className="absolute left-3 top-3 rounded-full bg-gold-gradient px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-foreground">
-            Bestseller
-          </span>
-        )}
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          {product.bestseller && (
+            <span className="rounded-full bg-gold-gradient px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-foreground">
+              Bestseller
+            </span>
+          )}
+          {product.discount && (
+            <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">
+              {product.discount}% off
+            </span>
+          )}
+        </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            toggle(product.id);
+          }}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-pressed={wishlisted}
+          className={cn(
+            "absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-card/90 shadow-warm transition-opacity",
+            wishlisted
+              ? "opacity-100"
+              : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+          )}
+        >
+          <Heart
+            className={cn(
+              "size-4",
+              wishlisted ? "fill-primary text-primary" : "text-muted-foreground",
+            )}
+          />
+        </button>
         {!product.inStock && (
           <span className="absolute inset-0 grid place-items-center bg-maroon-deep/60 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground">
             Sold out
           </span>
         )}
+        <span className="absolute inset-x-0 bottom-0 translate-y-full bg-primary py-2 text-center text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-transform duration-300 group-hover:translate-y-0">
+          Quick view
+        </span>
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
@@ -65,7 +109,12 @@ export function ProductCard({ product }: { product: Product }) {
             {product.name}
           </Link>
         </div>
-        <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">{product.description}</p>
+        <div className="mt-1.5 flex items-center gap-2">
+          <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
+        </div>
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+          {product.shortDescription}
+        </p>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
           {product.variants.map((w) => (
@@ -85,7 +134,16 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-4">
-          <span className="font-display text-lg font-bold text-primary">{formatINR(variant.price)}</span>
+          <span className="flex flex-col">
+            <span className="font-display text-lg font-bold text-primary">
+              {formatINR(variant.price)}
+            </span>
+            {product.discount && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatINR(product.originalPrice ?? 0)}
+              </span>
+            )}
+          </span>
           <Button
             size="sm"
             disabled={!product.inStock}

@@ -1,5 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { formatINR, WHATSAPP_NUMBER } from "@/data/products";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { formatINR } from "@/data/products";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export type CartItem = {
   key: string;
@@ -26,7 +35,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "kala-flavours-cart";
+const STORAGE_KEY = "picklemart-cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -65,7 +74,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const setQty = useCallback((key: string, qty: number) => {
     setItems((prev) =>
-      qty <= 0 ? prev.filter((i) => i.key !== key) : prev.map((i) => (i.key === key ? { ...i, qty } : i)),
+      qty <= 0
+        ? prev.filter((i) => i.key !== key)
+        : prev.map((i) => (i.key === key ? { ...i, qty } : i)),
     );
   }, []);
 
@@ -80,19 +91,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const whatsappUrl = useMemo(() => {
     const lines = [
-      "*New order — Kala Flavours*",
+      "*PickleMart — New Order*",
       "",
       ...items.map(
         (i, idx) =>
           `${idx + 1}. ${i.name} (${i.weight}) x ${i.qty} — ${formatINR(i.price * i.qty)}`,
       ),
       "",
+      `Subtotal: ${formatINR(subtotal)}`,
+      "Delivery: to be confirmed",
       `*Total: ${formatINR(subtotal)}*`,
       "",
       "Name:",
       "Delivery address:",
     ];
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+    return buildWhatsAppUrl(lines.join("\n"));
   }, [items, subtotal]);
 
   const value: CartContextValue = {

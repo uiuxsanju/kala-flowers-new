@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Basket — Kala Flavours" },
+      { title: "Your Basket — PickleMart" },
       {
         name: "description",
-        content: "Review your Kala Flavours basket and place the order on WhatsApp.",
+        content: "Review your PickleMart basket and place the order on WhatsApp.",
       },
-      { property: "og:title", content: "Your Basket — Kala Flavours" },
-      { property: "og:description", content: "Review your basket and order Andhra pickles on WhatsApp." },
+      { property: "og:title", content: "Your Basket — PickleMart" },
+      {
+        property: "og:description",
+        content: "Review your basket and order Andhra flavours on WhatsApp.",
+      },
     ],
   }),
   component: CartPage,
@@ -33,9 +36,7 @@ function CartPage() {
             Add a jar of Mango Avakaya and a podi to get started.
           </p>
           <Button className="mt-5" asChild>
-            <Link to="/category/$categorySlug" params={{ categorySlug: "veg-pickles" }}>
-              Browse pickles
-            </Link>
+            <Link to="/shop">Browse Products</Link>
           </Button>
         </div>
       ) : (
@@ -43,7 +44,12 @@ function CartPage() {
           <div className="space-y-3">
             {items.map((i) => (
               <div key={i.key} className="flex gap-4 rounded-xl border border-border bg-card p-4">
-                <img src={i.image} alt="" loading="lazy" className="size-20 rounded-lg object-cover" />
+                <img
+                  src={i.image}
+                  alt=""
+                  loading="lazy"
+                  className="size-20 rounded-lg object-cover"
+                />
                 <div className="flex-1">
                   <p className="font-display text-base font-semibold">{i.name}</p>
                   <p className="text-xs text-muted-foreground">{i.weight}</p>
@@ -77,7 +83,10 @@ function CartPage() {
                 </div>
               </div>
             ))}
-            <button onClick={clear} className="text-sm text-muted-foreground hover:text-destructive">
+            <button
+              onClick={clear}
+              className="text-sm text-muted-foreground hover:text-destructive"
+            >
               Clear basket
             </button>
           </div>

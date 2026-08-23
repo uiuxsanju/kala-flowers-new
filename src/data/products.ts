@@ -13,18 +13,25 @@ export type WeightVariant = {
 
 export type Product = {
   id: string;
+  slug: string;
   name: string;
   category: string; // category slug
   isVeg: boolean;
   description: string;
+  shortDescription: string;
   ingredients: string;
   price: number; // base price (250g)
+  originalPrice?: number;
+  discount?: number; // percent off, derived from originalPrice
   variants: WeightVariant[];
   image: string;
   gallery: string[];
   inStock: boolean;
   bestseller?: boolean;
-  rating?: number;
+  featured?: boolean;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
 };
 
 export type Category = {
@@ -120,12 +127,21 @@ type Seed = {
   category: string;
   isVeg: boolean;
   price: number;
+  originalPrice?: number;
   description: string;
   ingredients: string;
   image: string;
   inStock?: boolean;
   bestseller?: boolean;
   rating?: number;
+};
+
+// Small deterministic hash so review counts stay stable across renders/builds
+// instead of using Math.random() (which would mismatch during SSR hydration).
+const reviewCountFor = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return 38 + (hash % 260);
 };
 
 const seeds: Seed[] = [
@@ -136,6 +152,7 @@ const seeds: Seed[] = [
     category: "non-veg-pickles",
     isVeg: false,
     price: 449,
+    originalPrice: 499,
     description:
       "Boneless country chicken slow-cooked in sesame oil with hand-pounded chilli and garlic, matured for seven days before it reaches your jar.",
     ingredients: "Chicken, sesame oil, red chilli, garlic, ginger, mustard, fenugreek, salt.",
@@ -186,6 +203,7 @@ const seeds: Seed[] = [
     category: "veg-pickles",
     isVeg: true,
     price: 279,
+    originalPrice: 319,
     description:
       "The queen of Andhra pickles. Raw Banginapalli mango, mustard powder and Guntur chilli, cured in generous sesame oil.",
     ingredients: "Raw mango, mustard powder, red chilli powder, sesame oil, salt.",
@@ -199,7 +217,8 @@ const seeds: Seed[] = [
     category: "veg-pickles",
     isVeg: true,
     price: 299,
-    description: "Whole peeled garlic pods softened in spiced oil — pungent, warming and long-keeping.",
+    description:
+      "Whole peeled garlic pods softened in spiced oil — pungent, warming and long-keeping.",
     ingredients: "Garlic, sesame oil, red chilli, tamarind, mustard, salt.",
     image: vegImg,
     bestseller: true,
@@ -222,7 +241,8 @@ const seeds: Seed[] = [
     category: "veg-pickles",
     isVeg: true,
     price: 269,
-    description: "Carrot, gooseberry, green chilli and mango in one jar — the everyday all-rounder.",
+    description:
+      "Carrot, gooseberry, green chilli and mango in one jar — the everyday all-rounder.",
     ingredients: "Mixed vegetables, sesame oil, chilli, mustard, spices, salt.",
     image: vegImg,
     rating: 4.5,
@@ -234,7 +254,9 @@ const seeds: Seed[] = [
     category: "karapodulu",
     isVeg: true,
     price: 199,
-    description: "Roasted lentils and chilli ground coarse. Mix with a spoon of ghee for idli and dosa.",
+    originalPrice: 229,
+    description:
+      "Roasted lentils and chilli ground coarse. Mix with a spoon of ghee for idli and dosa.",
     ingredients: "Bengal gram, black gram, red chilli, sesame, asafoetida, salt.",
     image: podiImg,
     bestseller: true,
@@ -246,7 +268,8 @@ const seeds: Seed[] = [
     category: "karapodulu",
     isVeg: true,
     price: 229,
-    description: "Sun-dried sorrel leaves ground with chilli — sharp, sour and unmistakably Telugu.",
+    description:
+      "Sun-dried sorrel leaves ground with chilli — sharp, sour and unmistakably Telugu.",
     ingredients: "Gongura leaves, red chilli, garlic, cumin, salt.",
     image: podiImg,
     rating: 4.7,
@@ -257,7 +280,8 @@ const seeds: Seed[] = [
     category: "karapodulu",
     isVeg: true,
     price: 189,
-    description: "Roasted groundnuts with garlic and chilli. Nutty, mild and a favourite with kids.",
+    description:
+      "Roasted groundnuts with garlic and chilli. Nutty, mild and a favourite with kids.",
     ingredients: "Groundnut, red chilli, garlic, cumin, salt.",
     image: podiImg,
     rating: 4.6,
@@ -303,7 +327,8 @@ const seeds: Seed[] = [
     category: "cooking-powders",
     isVeg: true,
     price: 169,
-    description: "Coriander, pepper and cumin roasted separately then blended — a fragrant rasam every time.",
+    description:
+      "Coriander, pepper and cumin roasted separately then blended — a fragrant rasam every time.",
     ingredients: "Coriander, pepper, cumin, red chilli, toor dal.",
     image: masalaImg,
     rating: 4.7,
@@ -326,7 +351,9 @@ const seeds: Seed[] = [
     category: "sweets-snacks",
     isVeg: true,
     price: 189,
-    description: "Crisp ribbons of rice and gram flour, fried fresh in small batches every morning.",
+    originalPrice: 219,
+    description:
+      "Crisp ribbons of rice and gram flour, fried fresh in small batches every morning.",
     ingredients: "Rice flour, gram flour, butter, chilli, sesame, salt.",
     image: sweetsImg,
     bestseller: true,
@@ -338,7 +365,8 @@ const seeds: Seed[] = [
     category: "sweets-snacks",
     isVeg: true,
     price: 349,
-    description: "Jaggery and rice flour discs made only at festival time. Soft in the centre, sesame on top.",
+    description:
+      "Jaggery and rice flour discs made only at festival time. Soft in the centre, sesame on top.",
     ingredients: "Rice flour, jaggery, sesame, ghee.",
     image: sweetsImg,
     bestseller: true,
@@ -361,7 +389,8 @@ const seeds: Seed[] = [
     category: "sweets-snacks",
     isVeg: true,
     price: 179,
-    description: "Thin rice crackers studded with chana dal and curry leaf. Impossible to stop at one.",
+    description:
+      "Thin rice crackers studded with chana dal and curry leaf. Impossible to stop at one.",
     ingredients: "Rice flour, chana dal, curry leaves, chilli, salt.",
     image: sweetsImg,
     rating: 4.5,
@@ -429,6 +458,7 @@ const seeds: Seed[] = [
     category: "spice-powders",
     isVeg: true,
     price: 179,
+    originalPrice: 199,
     description: "Fiery Guntur Sannam chillies, stemmed by hand before grinding.",
     ingredients: "100% red chilli.",
     image: podiImg,
@@ -442,7 +472,8 @@ const seeds: Seed[] = [
     category: "cooking-pastes",
     isVeg: true,
     price: 239,
-    description: "Tamarind tempering concentrate — stir a spoon into hot rice for instant pulihora.",
+    description:
+      "Tamarind tempering concentrate — stir a spoon into hot rice for instant pulihora.",
     ingredients: "Tamarind, sesame oil, peanuts, chana dal, chilli, turmeric.",
     image: pasteImg,
     rating: 4.7,
@@ -476,7 +507,9 @@ const seeds: Seed[] = [
     category: "premium-sweets",
     isVeg: true,
     price: 429,
-    description: "Atreyapuram paper-thin rice sheets rolled with jaggery and ghee. Fragile, festive, unforgettable.",
+    originalPrice: 479,
+    description:
+      "Atreyapuram paper-thin rice sheets rolled with jaggery and ghee. Fragile, festive, unforgettable.",
     ingredients: "Rice starch sheets, jaggery, ghee, dry fruits.",
     image: sweetsImg,
     bestseller: true,
@@ -507,26 +540,50 @@ const seeds: Seed[] = [
   },
 ];
 
-export const products: Product[] = seeds.map((s) => ({
-  ...s,
-  inStock: s.inStock ?? true,
-  variants: v(s.price),
-  gallery: [s.image, s.image, s.image],
-}));
+export const products: Product[] = seeds.map((s) => {
+  const category = categories.find((c) => c.slug === s.category);
+  const discount = s.originalPrice
+    ? Math.round(((s.originalPrice - s.price) / s.originalPrice) * 100)
+    : undefined;
+  return {
+    ...s,
+    slug: s.id,
+    inStock: s.inStock ?? true,
+    variants: v(s.price),
+    gallery: [s.image, s.image, s.image],
+    shortDescription: (s.description.split(". ")[0] ?? s.description).replace(/\.$/, "") + ".",
+    ...(discount !== undefined ? { discount } : {}),
+    rating: s.rating ?? 4.5,
+    reviewCount: reviewCountFor(s.id),
+    featured: s.bestseller ?? false,
+    tags: [
+      s.category,
+      category?.name ?? "",
+      s.isVeg ? "veg" : "non-veg",
+      ...(s.bestseller ? ["bestseller"] : []),
+    ].filter(Boolean),
+  };
+});
 
 export const getProduct = (id: string) => products.find((p) => p.id === id);
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
 export const productsByCategory = (slug: string) => products.filter((p) => p.category === slug);
 export const bestsellers = products.filter((p) => p.bestseller);
+export const minPrice = Math.min(...products.map((p) => p.price));
+export const maxPrice = Math.max(...products.map((p) => p.price));
+export const allWeights = Array.from(
+  new Set(products.flatMap((p) => p.variants.map((v2) => v2.label))),
+);
 
 export const searchProducts = (q: string) => {
   const term = q.trim().toLowerCase();
   if (!term) return [];
   return products.filter(
-    (p) => p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term),
+    (p) =>
+      p.name.toLowerCase().includes(term) ||
+      p.description.toLowerCase().includes(term) ||
+      p.tags.some((t) => t.toLowerCase().includes(term)),
   );
 };
 
 export const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-
-export const WHATSAPP_NUMBER = "919876543210";

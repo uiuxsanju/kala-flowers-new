@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart";
+import { WishlistProvider } from "@/lib/wishlist";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
@@ -82,16 +83,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Kala Flavours — Andhra Homemade Pickles & Podis" },
+      { title: "PickleMart — Authentic Andhra Flavours" },
       {
         name: "description",
         content:
-          "Small-batch Andhra pickles, karapodulu, vadiyalu and festive snacks, cooked at home and shipped across India.",
+          "Shop authentic Andhra pickles, masalas, spice powders, traditional snacks and homemade flavours from PickleMart.",
       },
-      { property: "og:title", content: "Kala Flavours — Andhra Homemade Pickles & Podis" },
+      { property: "og:title", content: "PickleMart — Authentic Andhra Flavours" },
       {
         property: "og:description",
-        content: "Small-batch Andhra pickles, podis and snacks, shipped fresh across India.",
+        content:
+          "Shop authentic Andhra pickles, masalas, spice powders, traditional snacks and homemade flavours from PickleMart.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -102,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -133,16 +135,18 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <div className="flex min-h-screen flex-col bg-background">
-          <Navbar />
-          <main className="flex-1">
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
-        <CartDrawer />
-        <Toaster />
+        <WishlistProvider>
+          <div className="flex min-h-screen flex-col bg-background">
+            <Navbar />
+            <main className="flex-1">
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </main>
+            <Footer />
+          </div>
+          <CartDrawer />
+          <Toaster />
+        </WishlistProvider>
       </CartProvider>
     </QueryClientProvider>
   );

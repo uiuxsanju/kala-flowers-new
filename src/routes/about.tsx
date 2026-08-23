@@ -4,16 +4,17 @@ import heroImg from "@/assets/hero-pickles.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "Our Story — Kala Flavours" },
+      { title: "Our Story — PickleMart" },
       {
         name: "description",
         content:
-          "How Kala Flavours grew from one kitchen in Hyderabad into small-batch Andhra pickles, podis and snacks shipped across India.",
+          "How PickleMart grew from one kitchen in Hyderabad into small-batch Andhra pickles, masalas and snacks shipped across India.",
       },
-      { property: "og:title", content: "Our Story — Kala Flavours" },
+      { property: "og:title", content: "Our Story — PickleMart" },
       {
         property: "og:description",
-        content: "Small-batch Andhra pickles made the way they were made at home.",
+        content:
+          "Authentic taste, homemade tradition — small-batch Andhra flavours made the way they were made at home.",
       },
     ],
   }),
@@ -23,9 +24,12 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <h1 className="font-display text-4xl font-bold">Our story</h1>
+      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+        Our Story
+      </span>
+      <h1 className="mt-2 font-display text-4xl font-bold">Authentic Taste. Homemade Tradition.</h1>
       <p className="mt-4 text-muted-foreground">
-        Kala Flavours began in 1998 with one steel drum of mango avakaya on a Hyderabad terrace.
+        PickleMart began in 1998 with one steel drum of mango avakaya on a Hyderabad terrace.
         Neighbours asked for a jar, then their relatives did, and the recipe never changed.
       </p>
       <img

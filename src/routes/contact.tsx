@@ -2,20 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { WHATSAPP_NUMBER } from "@/data/products";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Us — Kala Flavours" },
+      { title: "Contact Us — PickleMart" },
       {
         name: "description",
         content:
-          "Reach Kala Flavours for bulk orders, gifting boxes or shipping questions — WhatsApp, phone or email.",
+          "Reach PickleMart for bulk orders, gifting boxes or shipping questions — WhatsApp, phone or email.",
       },
-      { property: "og:title", content: "Contact Us — Kala Flavours" },
-      { property: "og:description", content: "WhatsApp, call or email us about orders and gifting boxes." },
+      { property: "og:title", content: "Contact Us — PickleMart" },
+      {
+        property: "og:description",
+        content: "WhatsApp, call or email us about orders and gifting boxes.",
+      },
     ],
   }),
   component: ContactPage,
@@ -84,7 +87,7 @@ function ContactPage() {
                 <Phone className="size-4 shrink-0 text-primary" /> +91 98765 43210
               </li>
               <li className="flex gap-3">
-                <Mail className="size-4 shrink-0 text-primary" /> orders@kalaflavours.in
+                <Mail className="size-4 shrink-0 text-primary" /> orders@picklemart.in
               </li>
               <li className="flex gap-3">
                 <MapPin className="size-4 shrink-0 text-primary" />
@@ -92,7 +95,11 @@ function ContactPage() {
               </li>
             </ul>
             <Button variant="gold" className="mt-6 w-full" asChild>
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">
+              <a
+                href={buildWhatsAppUrl("Hi PickleMart, I have a question.")}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <MessageCircle className="size-4" /> Chat on WhatsApp
               </a>
             </Button>

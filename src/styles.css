@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Kala Flavours design system — deep maroon, warm gold, cream.
+ * PickleMart design system — deep wine maroon, warm gold, cream.
  * All colors are oklch tokens. Never hardcode colors in components.
  */
 
@@ -56,73 +56,73 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-display: "Bitter", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.65rem;
 
-  --background: oklch(0.977 0.014 82.5);
-  --foreground: oklch(0.243 0.045 32.5);
+  --background: oklch(0.985 0.012 75.4);
+  --foreground: oklch(0.229 0.017 37.3);
 
-  --card: oklch(0.995 0.006 90);
-  --card-foreground: oklch(0.243 0.045 32.5);
-  --popover: oklch(0.995 0.006 90);
-  --popover-foreground: oklch(0.243 0.045 32.5);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.229 0.017 37.3);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.229 0.017 37.3);
 
-  /* deep maroon */
-  --primary: oklch(0.405 0.163 26.5);
-  --primary-foreground: oklch(0.977 0.014 82.5);
-  --maroon-deep: oklch(0.285 0.12 25);
+  /* deep wine maroon */
+  --primary: oklch(0.389 0.125 25.2);
+  --primary-foreground: oklch(0.985 0.012 75.4);
+  --maroon-deep: oklch(0.28 0.119 25.2);
 
-  --secondary: oklch(0.939 0.031 79);
-  --secondary-foreground: oklch(0.35 0.12 27);
+  --secondary: oklch(0.94 0.03 81.6);
+  --secondary-foreground: oklch(0.34 0.09 27);
 
-  --muted: oklch(0.939 0.024 80);
-  --muted-foreground: oklch(0.505 0.038 45);
+  --muted: oklch(0.945 0.02 78);
+  --muted-foreground: oklch(0.517 0.025 43.7);
 
   /* warm gold */
-  --accent: oklch(0.762 0.142 79.5);
-  --accent-foreground: oklch(0.265 0.09 40);
-  --gold: oklch(0.762 0.142 79.5);
-  --gold-foreground: oklch(0.265 0.09 40);
-  --cream: oklch(0.977 0.014 82.5);
+  --accent: oklch(0.652 0.132 81.6);
+  --accent-foreground: oklch(0.229 0.017 37.3);
+  --gold: oklch(0.652 0.132 81.6);
+  --gold-foreground: oklch(0.229 0.017 37.3);
+  --cream: oklch(0.985 0.012 75.4);
 
   --veg: oklch(0.58 0.16 145);
-  --nonveg: oklch(0.55 0.2 27);
+  --nonveg: oklch(0.5 0.19 27);
 
   --destructive: oklch(0.55 0.21 27);
   --destructive-foreground: oklch(0.985 0.01 85);
 
-  --border: oklch(0.895 0.026 74);
-  --input: oklch(0.895 0.026 74);
-  --ring: oklch(0.405 0.163 26.5);
+  --border: oklch(0.89 0.025 81.6);
+  --input: oklch(0.89 0.025 81.6);
+  --ring: oklch(0.389 0.125 25.2);
 
-  --chart-1: oklch(0.405 0.163 26.5);
-  --chart-2: oklch(0.762 0.142 79.5);
+  --chart-1: oklch(0.389 0.125 25.2);
+  --chart-2: oklch(0.652 0.132 81.6);
   --chart-3: oklch(0.58 0.16 145);
-  --chart-4: oklch(0.6 0.14 45);
-  --chart-5: oklch(0.285 0.12 25);
+  --chart-4: oklch(0.574 0.139 78.6);
+  --chart-5: oklch(0.28 0.119 25.2);
 
-  --sidebar: oklch(0.965 0.018 82);
-  --sidebar-foreground: oklch(0.243 0.045 32.5);
-  --sidebar-primary: oklch(0.405 0.163 26.5);
-  --sidebar-primary-foreground: oklch(0.977 0.014 82.5);
-  --sidebar-accent: oklch(0.939 0.031 79);
-  --sidebar-accent-foreground: oklch(0.35 0.12 27);
-  --sidebar-border: oklch(0.895 0.026 74);
-  --sidebar-ring: oklch(0.405 0.163 26.5);
+  --sidebar: oklch(0.965 0.016 78);
+  --sidebar-foreground: oklch(0.229 0.017 37.3);
+  --sidebar-primary: oklch(0.389 0.125 25.2);
+  --sidebar-primary-foreground: oklch(0.985 0.012 75.4);
+  --sidebar-accent: oklch(0.94 0.03 81.6);
+  --sidebar-accent-foreground: oklch(0.34 0.09 27);
+  --sidebar-border: oklch(0.89 0.025 81.6);
+  --sidebar-ring: oklch(0.389 0.125 25.2);
 
   --gradient-hero: linear-gradient(
     135deg,
-    oklch(0.285 0.12 25) 0%,
-    oklch(0.405 0.163 26.5) 55%,
-    oklch(0.47 0.16 33) 100%
+    oklch(0.28 0.119 25.2) 0%,
+    oklch(0.389 0.125 25.2) 55%,
+    oklch(0.498 0.132 31.2) 100%
   );
-  --gradient-gold: linear-gradient(100deg, oklch(0.79 0.14 84), oklch(0.71 0.15 68));
-  --shadow-warm: 0 12px 34px -18px oklch(0.285 0.12 25 / 0.55);
-  --shadow-lift: 0 20px 45px -22px oklch(0.285 0.12 25 / 0.5);
+  --gradient-gold: linear-gradient(100deg, oklch(0.769 0.119 83.6), oklch(0.574 0.139 78.6));
+  --shadow-warm: 0 12px 34px -18px oklch(0.28 0.119 25.2 / 0.5);
+  --shadow-lift: 0 20px 45px -22px oklch(0.28 0.119 25.2 / 0.45);
 }
 
 @layer base {
@@ -183,5 +183,28 @@
   &:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lift);
+  }
+}
+
+/* Subtle mandala-style ring motif, used as a faint corner accent */
+@utility mandala-corner {
+  background-image:
+    radial-gradient(circle, transparent 58%, currentColor 59%, currentColor 60%, transparent 61%),
+    radial-gradient(circle, transparent 78%, currentColor 79%, currentColor 80%, transparent 81%);
+  opacity: 0.08;
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
