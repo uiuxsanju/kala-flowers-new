@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { formatINR, type Product } from "@/data/products";
+import { formatINR, type Product, type WeightVariant } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,9 @@ export function VegBadge({ isVeg }: { isVeg: boolean }) {
 }
 
 export function ProductCard({ product }: { product: Product }) {
-  const [variant, setVariant] = useState(product.variants[0]);
+  const [variant, setVariant] = useState<WeightVariant>(
+    product.variants[0] ?? { label: "250g", price: product.price },
+  );
   const { addItem, setOpen } = useCart();
 
   return (
