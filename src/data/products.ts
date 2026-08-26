@@ -20,7 +20,7 @@ export type Product = {
   description: string;
   shortDescription: string;
   ingredients: string;
-  price: number; // base price (250g)
+  price: number; // price of the smallest available pack
   originalPrice?: number;
   discount?: number; // percent off, derived from originalPrice
   variants: WeightVariant[];
@@ -42,528 +42,785 @@ export type Category = {
   blurb: string;
 };
 
-export const categories: Category[] = [
+// ---------------------------------------------------------------------------
+// Categories (count is computed below, after the full catalogue is built)
+// ---------------------------------------------------------------------------
+
+const categoriesBase: Omit<Category, "count">[] = [
   {
     slug: "non-veg-pickles",
     name: "Non-Veg Pickles",
-    count: 31,
     image: nonVegImg,
     blurb: "Slow-cooked meat pickles in cold-pressed sesame oil",
   },
   {
     slug: "veg-pickles",
     name: "Veg Pickles",
-    count: 35,
     image: vegImg,
     blurb: "Avakaya, gongura, garlic — sun-cured the old way",
   },
   {
     slug: "karapodulu",
     name: "Karapodulu / Spice Powders",
-    count: 21,
     image: podiImg,
     blurb: "Stone-ground podis for hot rice and ghee",
   },
   {
     slug: "vadiyalu",
     name: "Vadiyalu",
-    count: 13,
     image: vadiyaluImg,
     blurb: "Sun-dried fryums made on terrace cloth",
   },
   {
     slug: "cooking-powders",
     name: "Powders / Cooking Products",
-    count: 4,
     image: masalaImg,
-    blurb: "Everyday rasam and sambar essentials",
+    blurb: "Everyday rasam, sambar and kura karam essentials",
   },
   {
     slug: "sweets-snacks",
     name: "Sweets & Snacks",
-    count: 35,
     image: sweetsImg,
-    blurb: "Festive murukku, ariselu and laddus",
+    blurb: "Festive murukku, mixture, chikki and laddus",
   },
   {
     slug: "masalas",
     name: "Masalas",
-    count: 6,
     image: masalaImg,
-    blurb: "Freshly roasted blends for curries",
+    blurb: "Freshly roasted blends for curries and fries",
   },
   {
     slug: "spice-powders",
     name: "Spice Powders",
-    count: 3,
     image: podiImg,
     blurb: "Single-origin, unadulterated pure spice",
   },
   {
     slug: "cooking-pastes",
     name: "Cooking Pastes",
-    count: 5,
     image: pasteImg,
     blurb: "Ready pastes for one-pot Andhra meals",
   },
   {
     slug: "premium-sweets",
     name: "Sweets & Premium Products",
-    count: 4,
     image: sweetsImg,
-    blurb: "Putharekulu, ulavacharu and gift boxes",
+    blurb: "Putharekulu, pure honey, ghee and festive gifting",
+  },
+  {
+    slug: "bakery-dry-fruits",
+    name: "Bakery & Dry Fruits",
+    image: sweetsImg,
+    blurb: "Fresh bakes and premium dry fruit gifting boxes",
   },
 ];
 
-const v = (p250: number): WeightVariant[] => [
-  { label: "250g", price: p250 },
-  { label: "500g", price: Math.round(p250 * 1.9) },
-  { label: "1kg", price: Math.round(p250 * 3.6) },
-];
+// ---------------------------------------------------------------------------
+// Weight-variant generation
+// ---------------------------------------------------------------------------
+// Every product is entered at ONE known price + weight ("unit", in grams).
+// We generate a small/medium/large pack lineup for its size class and scale
+// the price using a mild bulk-discount curve, so a doubling in weight costs
+// a bit less than double (matching how these are actually priced today).
 
-type Seed = {
-  id: string;
-  name: string;
-  category: string;
-  isVeg: boolean;
-  price: number;
-  originalPrice?: number;
-  description: string;
-  ingredients: string;
-  image: string;
-  inStock?: boolean;
-  bestseller?: boolean;
-  rating?: number;
+type SizeClass = "podi" | "standard" | "cake";
+
+const SIZE_SETS: Record<SizeClass, number[]> = {
+  podi: [100, 250, 500],
+  standard: [250, 500, 1000],
+  cake: [500, 1000, 1500],
 };
 
-// Small deterministic hash so review counts stay stable across renders/builds
-// instead of using Math.random() (which would mismatch during SSR hydration).
+const gramsLabel = (g: number) => {
+  if (g >= 1000) {
+    const kg = g / 1000;
+    return `${Number.isInteger(kg) ? kg : kg.toFixed(1)}kg`;
+  }
+  return `${g}g`;
+};
+
+const ratioMultiplier = (ratio: number) => {
+  if (ratio === 1) return 1;
+  if (ratio > 1) return ratio * (1 - 0.05 * Math.log2(ratio));
+  return ratio * (1 + 0.05 * Math.log2(1 / ratio));
+};
+
+const variantsFor = (unit: number, price: number, sizeClass: SizeClass): WeightVariant[] =>
+  SIZE_SETS[sizeClass].map((g) => ({
+    label: gramsLabel(g),
+    price: Math.round(price * ratioMultiplier(g / unit)),
+  }));
+
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[()]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-+|-+$)/g, "");
+
+// Deterministic hash-based helpers so numbers stay stable across renders/SSR
+// instead of using Math.random().
 const reviewCountFor = (id: string) => {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
   return 38 + (hash % 260);
 };
 
-const seeds: Seed[] = [
-  // Non-veg pickles
-  {
-    id: "nv-chicken-pickle",
-    name: "Andhra Chicken Pickle",
-    category: "non-veg-pickles",
-    isVeg: false,
-    price: 449,
-    originalPrice: 499,
-    description:
-      "Boneless country chicken slow-cooked in sesame oil with hand-pounded chilli and garlic, matured for seven days before it reaches your jar.",
-    ingredients: "Chicken, sesame oil, red chilli, garlic, ginger, mustard, fenugreek, salt.",
-    image: nonVegImg,
-    bestseller: true,
-    rating: 4.8,
-  },
-  {
-    id: "nv-mutton-pickle",
-    name: "Naati Mutton Pickle",
-    category: "non-veg-pickles",
-    isVeg: false,
-    price: 629,
-    description:
-      "Tender goat meat cubes cooked down till the oil separates, spiced the way Guntur grandmothers have for generations.",
-    ingredients: "Mutton, sesame oil, red chilli, garlic, ginger, spices, salt.",
-    image: nonVegImg,
-    bestseller: true,
-    rating: 4.9,
-  },
-  {
-    id: "nv-prawns-pickle",
-    name: "Royyala (Prawns) Pickle",
-    category: "non-veg-pickles",
-    isVeg: false,
-    price: 549,
-    description:
-      "Coastal prawns cleaned by hand and fried crisp before pickling — deeply savoury with a slow-building heat.",
-    ingredients: "Prawns, sesame oil, red chilli, tamarind, garlic, spices, salt.",
-    image: nonVegImg,
-    rating: 4.7,
-  },
-  {
-    id: "nv-fish-pickle",
-    name: "Chepa (Fish) Pickle",
-    category: "non-veg-pickles",
-    isVeg: false,
-    price: 499,
-    description: "Boneless fish chunks in a tangy tamarind-chilli base. A Godavari delta classic.",
-    ingredients: "Fish, sesame oil, tamarind, red chilli, garlic, spices, salt.",
-    image: nonVegImg,
-    rating: 4.6,
-  },
-  // Veg pickles
-  {
-    id: "vp-mango-avakaya",
-    name: "Mango Avakaya",
-    category: "veg-pickles",
-    isVeg: true,
-    price: 279,
-    originalPrice: 319,
-    description:
-      "The queen of Andhra pickles. Raw Banginapalli mango, mustard powder and Guntur chilli, cured in generous sesame oil.",
-    ingredients: "Raw mango, mustard powder, red chilli powder, sesame oil, salt.",
-    image: vegImg,
-    bestseller: true,
-    rating: 4.9,
-  },
-  {
-    id: "vp-garlic-pickle",
-    name: "Garlic (Vellulli) Pickle",
-    category: "veg-pickles",
-    isVeg: true,
-    price: 299,
-    description:
-      "Whole peeled garlic pods softened in spiced oil — pungent, warming and long-keeping.",
-    ingredients: "Garlic, sesame oil, red chilli, tamarind, mustard, salt.",
-    image: vegImg,
-    bestseller: true,
-    rating: 4.7,
-  },
-  {
-    id: "vp-lemon-pickle",
-    name: "Lemon (Nimmakaya) Pickle",
-    category: "veg-pickles",
-    isVeg: true,
-    price: 249,
-    description: "Sun-cured lemon wedges, bright and salty-sour. Perfect with curd rice.",
-    ingredients: "Lemon, red chilli powder, fenugreek, turmeric, salt.",
-    image: vegImg,
-    rating: 4.6,
-  },
-  {
-    id: "vp-mixed-veg-pickle",
-    name: "Mixed Vegetable Pickle",
-    category: "veg-pickles",
-    isVeg: true,
-    price: 269,
-    description:
-      "Carrot, gooseberry, green chilli and mango in one jar — the everyday all-rounder.",
-    ingredients: "Mixed vegetables, sesame oil, chilli, mustard, spices, salt.",
-    image: vegImg,
-    rating: 4.5,
-  },
-  // Karapodulu
-  {
-    id: "kp-idli-karam",
-    name: "Idli Karam Podi",
-    category: "karapodulu",
-    isVeg: true,
-    price: 199,
-    originalPrice: 229,
-    description:
-      "Roasted lentils and chilli ground coarse. Mix with a spoon of ghee for idli and dosa.",
-    ingredients: "Bengal gram, black gram, red chilli, sesame, asafoetida, salt.",
-    image: podiImg,
-    bestseller: true,
-    rating: 4.8,
-  },
-  {
-    id: "kp-gongura-podi",
-    name: "Gongura Karam Podi",
-    category: "karapodulu",
-    isVeg: true,
-    price: 229,
-    description:
-      "Sun-dried sorrel leaves ground with chilli — sharp, sour and unmistakably Telugu.",
-    ingredients: "Gongura leaves, red chilli, garlic, cumin, salt.",
-    image: podiImg,
-    rating: 4.7,
-  },
-  {
-    id: "kp-peanut-podi",
-    name: "Peanut (Palli) Karam Podi",
-    category: "karapodulu",
-    isVeg: true,
-    price: 189,
-    description:
-      "Roasted groundnuts with garlic and chilli. Nutty, mild and a favourite with kids.",
-    ingredients: "Groundnut, red chilli, garlic, cumin, salt.",
-    image: podiImg,
-    rating: 4.6,
-  },
-  // Vadiyalu
-  {
-    id: "vd-rice-vadiyalu",
-    name: "Rice Vadiyalu",
-    category: "vadiyalu",
-    isVeg: true,
-    price: 179,
-    description: "Rice batter discs dried under three days of summer sun. Fry till they puff.",
-    ingredients: "Rice flour, cumin, green chilli, salt.",
-    image: vadiyaluImg,
-    rating: 4.5,
-  },
-  {
-    id: "vd-carrot-vadiyalu",
-    name: "Carrot Vadiyalu",
-    category: "vadiyalu",
-    isVeg: true,
-    price: 199,
-    description: "Grated carrot folded into sago batter for a sweet-savoury crunch.",
-    ingredients: "Carrot, sago, rice flour, chilli, salt.",
-    image: vadiyaluImg,
-    rating: 4.4,
-  },
-  {
-    id: "vd-ragi-vadiyalu",
-    name: "Ragi Vadiyalu",
-    category: "vadiyalu",
-    isVeg: true,
-    price: 209,
-    description: "Finger millet vadiyalu — earthy, wholesome and lighter on the stomach.",
-    ingredients: "Ragi flour, cumin, chilli, salt.",
-    image: vadiyaluImg,
-    rating: 4.4,
-  },
-  // Cooking powders
-  {
-    id: "cp-rasam-powder",
-    name: "Rasam Powder",
-    category: "cooking-powders",
-    isVeg: true,
-    price: 169,
-    description:
-      "Coriander, pepper and cumin roasted separately then blended — a fragrant rasam every time.",
-    ingredients: "Coriander, pepper, cumin, red chilli, toor dal.",
-    image: masalaImg,
-    rating: 4.7,
-  },
-  {
-    id: "cp-sambar-powder",
-    name: "Sambar Powder",
-    category: "cooking-powders",
-    isVeg: true,
-    price: 179,
-    description: "A balanced house blend with just enough heat to carry vegetables and tamarind.",
-    ingredients: "Coriander, red chilli, chana dal, fenugreek, curry leaves.",
-    image: masalaImg,
-    rating: 4.6,
-  },
-  // Sweets & snacks
-  {
-    id: "ss-ribbon-murukku",
-    name: "Ribbon Murukku",
-    category: "sweets-snacks",
-    isVeg: true,
-    price: 189,
-    originalPrice: 219,
-    description:
-      "Crisp ribbons of rice and gram flour, fried fresh in small batches every morning.",
-    ingredients: "Rice flour, gram flour, butter, chilli, sesame, salt.",
-    image: sweetsImg,
-    bestseller: true,
-    rating: 4.7,
-  },
-  {
-    id: "ss-ariselu",
-    name: "Ariselu",
-    category: "sweets-snacks",
-    isVeg: true,
-    price: 349,
-    description:
-      "Jaggery and rice flour discs made only at festival time. Soft in the centre, sesame on top.",
-    ingredients: "Rice flour, jaggery, sesame, ghee.",
-    image: sweetsImg,
-    bestseller: true,
-    rating: 4.8,
-  },
-  {
-    id: "ss-boondi-laddu",
-    name: "Boondi Laddu",
-    category: "sweets-snacks",
-    isVeg: true,
-    price: 329,
-    description: "Ghee-rich laddus with cashew and cardamom, rolled by hand.",
-    ingredients: "Gram flour, sugar, ghee, cashew, cardamom.",
-    image: sweetsImg,
-    rating: 4.7,
-  },
-  {
-    id: "ss-chekkalu",
-    name: "Chekkalu",
-    category: "sweets-snacks",
-    isVeg: true,
-    price: 179,
-    description:
-      "Thin rice crackers studded with chana dal and curry leaf. Impossible to stop at one.",
-    ingredients: "Rice flour, chana dal, curry leaves, chilli, salt.",
-    image: sweetsImg,
-    rating: 4.5,
-  },
-  // Masalas
-  {
-    id: "ms-chicken-masala",
-    name: "Chicken Masala",
-    category: "masalas",
-    isVeg: true,
-    price: 199,
-    description: "A dark roasted blend built for country chicken curry and fry.",
-    ingredients: "Coriander, chilli, pepper, cinnamon, clove, star anise.",
-    image: masalaImg,
-    rating: 4.6,
-  },
-  {
-    id: "ms-mutton-masala",
-    name: "Mutton Masala",
-    category: "masalas",
-    isVeg: true,
-    price: 219,
-    description: "Heavier on whole garam spices to stand up to slow-cooked mutton.",
-    ingredients: "Coriander, chilli, cardamom, mace, cinnamon, clove.",
-    image: masalaImg,
-    rating: 4.6,
-  },
-  {
-    id: "ms-turmeric-powder",
-    name: "Turmeric Powder",
-    category: "masalas",
-    isVeg: true,
-    price: 129,
-    description: "Nizamabad turmeric, sun-dried and stone-ground. High colour, no fillers.",
-    ingredients: "100% turmeric.",
-    image: masalaImg,
-    rating: 4.8,
-  },
-  // Spice powders
-  {
-    id: "sp-coriander-powder",
-    name: "Coriander Powder",
-    category: "spice-powders",
-    isVeg: true,
-    price: 119,
-    description: "Freshly milled coriander seed with its aroma still intact.",
-    ingredients: "100% coriander seed.",
-    image: podiImg,
-    rating: 4.6,
-  },
-  {
-    id: "sp-cumin-powder",
-    name: "Cumin Powder",
-    category: "spice-powders",
-    isVeg: true,
-    price: 149,
-    description: "Gently roasted cumin, ground fine for tempering and raitas.",
-    ingredients: "100% cumin seed.",
-    image: podiImg,
-    rating: 4.5,
-  },
-  {
-    id: "sp-red-chilli-powder",
-    name: "Guntur Red Chilli Powder",
-    category: "spice-powders",
-    isVeg: true,
-    price: 179,
-    originalPrice: 199,
-    description: "Fiery Guntur Sannam chillies, stemmed by hand before grinding.",
-    ingredients: "100% red chilli.",
-    image: podiImg,
-    bestseller: true,
-    rating: 4.8,
-  },
-  // Cooking pastes
-  {
-    id: "pa-pulihora-paste",
-    name: "Pulihora Paste",
-    category: "cooking-pastes",
-    isVeg: true,
-    price: 239,
-    description:
-      "Tamarind tempering concentrate — stir a spoon into hot rice for instant pulihora.",
-    ingredients: "Tamarind, sesame oil, peanuts, chana dal, chilli, turmeric.",
-    image: pasteImg,
-    rating: 4.7,
-  },
-  {
-    id: "pa-gongura-paste",
-    name: "Gongura Paste",
-    category: "cooking-pastes",
-    isVeg: true,
-    price: 259,
-    description: "Sorrel leaves cooked down with garlic — a base for mutton, prawns or plain dal.",
-    ingredients: "Gongura, sesame oil, garlic, chilli, salt.",
-    image: pasteImg,
-    rating: 4.6,
-  },
-  {
-    id: "pa-ginger-garlic-paste",
-    name: "Ginger Garlic Paste",
-    category: "cooking-pastes",
-    isVeg: true,
-    price: 149,
-    description: "Equal parts fresh ginger and garlic, no water added.",
-    ingredients: "Ginger, garlic, salt, edible oil.",
-    image: pasteImg,
-    rating: 4.4,
-  },
-  // Premium
-  {
-    id: "pr-putharekulu",
-    name: "Putharekulu (Paper Sweet)",
-    category: "premium-sweets",
-    isVeg: true,
-    price: 429,
-    originalPrice: 479,
-    description:
-      "Atreyapuram paper-thin rice sheets rolled with jaggery and ghee. Fragile, festive, unforgettable.",
-    ingredients: "Rice starch sheets, jaggery, ghee, dry fruits.",
-    image: sweetsImg,
-    bestseller: true,
-    rating: 4.9,
-  },
-  {
-    id: "pr-ulavacharu",
-    name: "Ulavacharu",
-    category: "premium-sweets",
-    isVeg: true,
-    price: 389,
-    description: "Horse gram broth reduced for hours to a dark, smoky concentrate.",
-    ingredients: "Horse gram, tamarind, spices, salt.",
-    image: pasteImg,
-    rating: 4.7,
-  },
-  {
-    id: "pr-dry-fruit-box",
-    name: "Premium Dry Fruit Box",
-    category: "premium-sweets",
-    isVeg: true,
-    price: 899,
-    description: "A gifting box of almonds, cashews, pista and figs in a hand-tied wrap.",
-    ingredients: "Almond, cashew, pistachio, fig.",
-    image: sweetsImg,
-    inStock: false,
-    rating: 4.6,
-  },
+const ratingFor = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 17 + id.charCodeAt(i)) >>> 0;
+  return Math.round((4.3 + (hash % 5) * 0.1) * 10) / 10;
+};
+
+// ---------------------------------------------------------------------------
+// Description / ingredients auto-generation (keyword-aware per category)
+// ---------------------------------------------------------------------------
+
+type BlockKind =
+  | "non-veg"
+  | "veg"
+  | "karapodulu"
+  | "vadiyalu"
+  | "cooking-powders"
+  | "masalas"
+  | "spice-powders"
+  | "cooking-pastes"
+  | "premium-sweets"
+  | "sweets-snacks"
+  | "bakery";
+
+function describeNonVeg(name: string): string {
+  const n = name.toLowerCase();
+  let protein = "Country meat";
+  if (n.includes("chicken")) protein = "Country chicken";
+  if (n.includes("mutton")) protein = "Goat mutton";
+  if (n.includes("prawn")) protein = "Coastal prawns";
+  if (n.includes("crab")) protein = "Crab meat";
+  if (
+    n.includes("fish") ||
+    n.includes("murrel") ||
+    n.includes("bass") ||
+    n.includes("bait") ||
+    n.includes("apollo") ||
+    n.includes("pond")
+  )
+    protein = "Fresh fish";
+  const gongura = n.includes("sorrel") || n.includes("gongura");
+  const kheema = n.includes("kheema");
+  const boti = n.includes("boti");
+  const boneless = n.includes("boneless");
+  const extra = n.includes("extra");
+  const cut = kheema
+    ? "minced fine"
+    : boti
+      ? "tripe, cut into bite-sized pieces"
+      : boneless
+        ? "cleaned and deboned"
+        : "cut on the bone for deeper flavour";
+  const flavour = gongura
+    ? "cooked down with tangy sun-dried gongura leaves for a sharp, sour edge"
+    : "slow-cooked in cold-pressed sesame oil with Guntur chilli and hand-ground spices";
+  const heat = extra ? " Made extra spicy for those who like it hot." : "";
+  return `${protein}, ${cut}, ${flavour}.${heat} Matured for a few days before it reaches your jar.`;
+}
+
+function ingredientsNonVeg(name: string): string {
+  const n = name.toLowerCase();
+  let protein = "Country meat";
+  if (n.includes("chicken")) protein = "Chicken";
+  if (n.includes("mutton")) protein = "Mutton";
+  if (n.includes("prawn")) protein = "Prawns";
+  if (n.includes("crab")) protein = "Crab";
+  if (
+    n.includes("fish") ||
+    n.includes("murrel") ||
+    n.includes("bass") ||
+    n.includes("bait") ||
+    n.includes("apollo") ||
+    n.includes("pond")
+  )
+    protein = "Fish";
+  const gongura = n.includes("sorrel") || n.includes("gongura") ? ", gongura leaves" : "";
+  return `${protein}, sesame oil, red chilli${gongura}, garlic, ginger, mustard, fenugreek, salt.`;
+}
+
+const VEG_CORE_MAP: [string, string][] = [
+  ["drumstick leaves", "Drumstick leaves"],
+  ["mango ginger", "Mango ginger (adavi allam)"],
+  ["mango", "Raw mango"],
+  ["amla", "Tart gooseberry (amla)"],
+  ["ginger", "Fresh ginger"],
+  ["garlic", "Whole peeled garlic"],
+  ["drumstick", "Tender drumstick"],
+  ["lemon", "Sun-cured lemon"],
+  ["tomato", "Ripe tomato"],
+  ["tamarind", "Tangy tamarind"],
+  ["red chilli", "Guntur red chilli"],
+  ["green chilli", "Fresh green chilli"],
+  ["bitter gourd", "Bitter gourd"],
+  ["citron", "Citron"],
+  ["brinjal", "Brinjal"],
+  ["sorrel", "Sun-dried gongura leaves"],
+  ["coriander", "Fresh coriander"],
+  ["curry leaves", "Curry leaves"],
+  ["mint", "Mint leaves"],
+  ["mixed veg", "A mix of seasonal vegetables"],
+  ["banana", "Raw banana"],
+  ["carrot", "Fresh carrot"],
+  ["beetroot", "Fresh beetroot"],
+  ["cauliflower", "Cauliflower"],
+  ["veld grape", "Veld grape (kaki mokka)"],
+  ["elephant foot", "Elephant foot yam"],
+  ["yam", "Elephant foot yam"],
+  ["broad beans", "Broad beans (chikkudu)"],
 ];
 
-export const products: Product[] = seeds.map((s) => {
-  const category = categories.find((c) => c.slug === s.category);
-  const discount = s.originalPrice
-    ? Math.round(((s.originalPrice - s.price) / s.originalPrice) * 100)
-    : undefined;
-  return {
-    ...s,
-    slug: s.id,
-    inStock: s.inStock ?? true,
-    variants: v(s.price),
-    gallery: [s.image, s.image, s.image],
-    shortDescription: (s.description.split(". ")[0] ?? s.description).replace(/\.$/, "") + ".",
-    ...(discount !== undefined ? { discount } : {}),
-    rating: s.rating ?? 4.5,
-    reviewCount: reviewCountFor(s.id),
-    featured: s.bestseller ?? false,
-    tags: [
-      s.category,
-      category?.name ?? "",
-      s.isVeg ? "veg" : "non-veg",
-      ...(s.bestseller ? ["bestseller"] : []),
-    ].filter(Boolean),
-  };
-});
+function describeVeg(name: string): string {
+  const n = name.toLowerCase();
+  let core = "Fresh vegetables";
+  for (const [k, v] of VEG_CORE_MAP) {
+    if (n.includes(k)) {
+      core = v;
+      break;
+    }
+  }
+  const style = n.includes("jaggery")
+    ? "sweetened with jaggery for a milder finish"
+    : n.includes("biryani")
+      ? "spiced the way it's stirred through hot biryani"
+      : n.includes("grated")
+        ? "grated fine and quick-cured"
+        : n.includes("small cut")
+          ? "cut small for an everyday jar"
+          : "cured the traditional way in mustard and red chilli";
+  return `${core}, ${style} with cold-pressed sesame oil and a pinch of asafoetida.`;
+}
+
+function ingredientsVeg(name: string): string {
+  const n = name.toLowerCase();
+  let core = "Mixed vegetables";
+  for (const [k, v] of VEG_CORE_MAP) {
+    if (n.includes(k)) {
+      core = v;
+      break;
+    }
+  }
+  const jaggery = n.includes("jaggery") ? "jaggery, " : "";
+  return `${core}, ${jaggery}mustard powder, red chilli powder, sesame oil, salt.`;
+}
+
+function describePodi(
+  name: string,
+  kind: "karapodulu" | "vadiyalu" | "cooking-powders" | "spice-powders" | "masalas",
+): string {
+  if (kind === "vadiyalu")
+    return `${name}, sun-dried the traditional way on cotton cloth until crisp. Deep-fry a few straight from the pack for a crunchy side with rice and dal.`;
+  if (kind === "spice-powders")
+    return `${name}, single-ingredient and stone-ground with nothing added — just the spice, roasted and milled fresh.`;
+  if (kind === "masalas")
+    return `${name}, a dark roasted spice blend built for authentic Andhra-style curries and fries.`;
+  if (kind === "cooking-powders")
+    return `${name}, roasted and ground fresh for everyday South Indian cooking.`;
+  return `${name}, dry-roasted lentils and chilli ground the traditional way. Mix with a spoon of ghee or oil and serve with hot rice, idli or dosa.`;
+}
+
+function ingredientsPodi(
+  name: string,
+  kind: "karapodulu" | "vadiyalu" | "cooking-powders" | "spice-powders" | "masalas",
+): string {
+  const n = name.toLowerCase();
+  if (kind === "vadiyalu") {
+    let base = "Rice flour";
+    if (n.includes("ragi")) base = "Ragi flour";
+    if (n.includes("moong")) base = "Moong dal batter";
+    if (n.includes("urad")) base = "Urad dal batter";
+    if (n.includes("pumpkin")) base = "Pumpkin, sago";
+    if (n.includes("challa") || n.includes("mirchi")) base = "Green chilli, gram flour batter";
+    return `${base}, cumin, chilli, salt — sun-dried.`;
+  }
+  if (kind === "spice-powders") {
+    if (n.includes("menthu") || n.includes("fenugreek")) return "100% fenugreek seed.";
+    if (n.includes("dhaniya") || n.includes("coriander")) return "100% coriander seed.";
+    if (n.includes("jeera") || n.includes("cumin")) return "100% cumin seed.";
+    return "100% single-origin spice.";
+  }
+  if (kind === "masalas") return "Coriander, red chilli, pepper, cinnamon, clove, cumin, salt.";
+  if (kind === "cooking-powders") {
+    if (n.includes("rasam")) return "Coriander, pepper, cumin, red chilli, toor dal.";
+    if (n.includes("sambar")) return "Coriander, red chilli, chana dal, fenugreek, curry leaves.";
+    if (n.includes("turmeric")) return "100% turmeric.";
+    if (n.includes("kura karam")) return "Red chilli, coriander seed, garlic, salt.";
+    return "Roasted lentils, spices, salt.";
+  }
+  // karapodulu
+  if (n.includes("prawns")) return "Dry prawns, red chilli, garlic, salt.";
+  if (n.includes("sesame")) return "Sesame seeds, red chilli, garlic, salt.";
+  if (n.includes("groundnut") || n.includes("peanut"))
+    return "Roasted peanuts, red chilli, garlic, salt.";
+  if (n.includes("flax")) return "Flax seeds, red chilli, garlic, salt.";
+  if (n.includes("kobbari") || n.includes("coconut"))
+    return "Dry coconut, red chilli, garlic, salt.";
+  if (n.includes("sonti")) return "Dry ginger, jaggery, spices.";
+  if (n.includes("amla")) return "Dried amla, red chilli, salt.";
+  if (n.includes("minapa")) return "Urad dal, red chilli, garlic, salt.";
+  if (n.includes("nalleru")) return "Nalleru (veld grape), red chilli, tamarind, salt.";
+  return "Roasted lentils, dried red chilli, curry leaves, asafoetida, salt.";
+}
+
+function describeSweet(name: string): string {
+  return `${name}, made fresh in small batches the way festival snacks are made at home.`;
+}
+
+function ingredientsSweet(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("laddu")) return "Gram flour or lentils, jaggery or sugar, ghee, cardamom.";
+  if (n.includes("chikki")) return "Peanuts or sesame, jaggery.";
+  if (n.includes("murukk") || n.includes("jantik") || n.includes("chegodi"))
+    return "Rice flour, gram flour, butter, sesame, chilli, salt.";
+  if (n.includes("boondi")) return "Gram flour, sugar or salt and spices, ghee.";
+  if (n.includes("ariselu")) return "Rice flour, jaggery, sesame, ghee.";
+  if (n.includes("mixture") || n.includes("pakodi") || n.includes("karapusa"))
+    return "Rice flakes, lentils, peanuts, curry leaves, spices, oil.";
+  if (n.includes("gorumitlu")) return "Rice flour, jaggery or sugar, ghee.";
+  if (n.includes("gavvalu")) return "Rice flour, sugar, ghee.";
+  if (n.includes("kommulu")) return "Rice flour, jaggery, sesame, ghee.";
+  if (n.includes("kabuli chana")) return "Kabuli chana, spices, oil, salt.";
+  return "Rice flour, gram flour, jaggery or sugar, ghee, spices.";
+}
+
+function describePaste(name: string): string {
+  return `${name}, slow-cooked into a ready-to-use base — just stir a spoon into hot rice or curry.`;
+}
+
+function ingredientsPaste(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("pulihora")) return "Tamarind, sesame oil, peanuts, chana dal, chilli, turmeric.";
+  if (n.includes("tomato")) return "Tomato, sesame oil, garlic, chilli, salt.";
+  if (n.includes("pudhina") || n.includes("mint"))
+    return "Mint leaves, green chilli, garlic, oil, salt.";
+  if (n.includes("kothimeera") || n.includes("coriander"))
+    return "Coriander leaves, green chilli, garlic, oil, salt.";
+  if (n.includes("gongura")) return "Gongura, sesame oil, garlic, chilli, salt.";
+  if (n.includes("ulavacharu")) return "Horse gram, tamarind, spices, salt.";
+  return "Fresh herbs, oil, garlic, salt.";
+}
+
+function describePremium(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("honey"))
+    return `${name}, raw and unprocessed — straight from the comb to the jar.`;
+  if (n.includes("ghee"))
+    return `${name}, slow-simmered from fresh cream the traditional bilona way.`;
+  return `${name}, a festive specialty made in small batches for gifting and special occasions.`;
+}
+
+function ingredientsPremium(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("honey")) return "100% raw honey.";
+  if (n.includes("ghee")) return "100% cow's milk ghee.";
+  if (n.includes("putharekulu")) return "Rice starch sheets, jaggery, ghee, dry fruits.";
+  if (n.includes("thandra")) return "Raw mango or palm pulp, jaggery or sugar, sun-dried.";
+  if (n.includes("laddu")) return "Lentils or dry fruits, jaggery, ghee, cardamom.";
+  return "Traditional ingredients, ghee, jaggery.";
+}
+
+function describeBakery(name: string): string {
+  return `${name}, freshly packed and perfect for gifting or a treat with evening chai.`;
+}
+
+function ingredientsBakery(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("cake"))
+    return "Refined flour, sugar, butter, eggs or egg substitute, flavouring.";
+  return "Assorted almonds, cashews, pistachio, raisins, figs.";
+}
+
+function describeFor(kind: BlockKind, name: string): string {
+  switch (kind) {
+    case "non-veg":
+      return describeNonVeg(name);
+    case "veg":
+      return describeVeg(name);
+    case "vadiyalu":
+      return describePodi(name, "vadiyalu");
+    case "cooking-powders":
+      return describePodi(name, "cooking-powders");
+    case "masalas":
+      return describePodi(name, "masalas");
+    case "spice-powders":
+      return describePodi(name, "spice-powders");
+    case "karapodulu":
+      return describePodi(name, "karapodulu");
+    case "cooking-pastes":
+      return describePaste(name);
+    case "premium-sweets":
+      return describePremium(name);
+    case "sweets-snacks":
+      return describeSweet(name);
+    case "bakery":
+      return describeBakery(name);
+  }
+}
+
+function ingredientsFor(kind: BlockKind, name: string): string {
+  switch (kind) {
+    case "non-veg":
+      return ingredientsNonVeg(name);
+    case "veg":
+      return ingredientsVeg(name);
+    case "vadiyalu":
+      return ingredientsPodi(name, "vadiyalu");
+    case "cooking-powders":
+      return ingredientsPodi(name, "cooking-powders");
+    case "masalas":
+      return ingredientsPodi(name, "masalas");
+    case "spice-powders":
+      return ingredientsPodi(name, "spice-powders");
+    case "karapodulu":
+      return ingredientsPodi(name, "karapodulu");
+    case "cooking-pastes":
+      return ingredientsPaste(name);
+    case "premium-sweets":
+      return ingredientsPremium(name);
+    case "sweets-snacks":
+      return ingredientsSweet(name);
+    case "bakery":
+      return ingredientsBakery(name);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue data
+// ---------------------------------------------------------------------------
+
+type RawItem = {
+  name: string;
+  price: number;
+  unit: number; // grams the given price corresponds to
+  isVeg?: boolean;
+  bestseller?: boolean;
+  rating?: number;
+  originalPrice?: number;
+  inStock?: boolean;
+};
+
+function buildBlock(
+  category: string,
+  idPrefix: string,
+  image: string,
+  sizeClass: SizeClass,
+  defaultVeg: boolean,
+  kind: BlockKind,
+  items: RawItem[],
+): Product[] {
+  const categoryName = categoriesBase.find((c) => c.slug === category)?.name ?? "";
+  return items.map((it) => {
+    const id = `${idPrefix}-${slugify(it.name)}`;
+    const variants = variantsFor(it.unit, it.price, sizeClass);
+    const price = variants[0]!.price;
+    const discount = it.originalPrice
+      ? Math.round(((it.originalPrice - it.price) / it.originalPrice) * 100)
+      : undefined;
+    const isVeg = it.isVeg ?? defaultVeg;
+    const description = describeFor(kind, it.name);
+    return {
+      id,
+      slug: id,
+      name: it.name,
+      category,
+      isVeg,
+      description,
+      shortDescription: (description.split(". ")[0] ?? description).replace(/\.$/, "") + ".",
+      ingredients: ingredientsFor(kind, it.name),
+      price,
+      ...(it.originalPrice !== undefined ? { originalPrice: it.originalPrice } : {}),
+      ...(discount !== undefined ? { discount } : {}),
+      variants,
+      image,
+      gallery: [image, image, image],
+      inStock: it.inStock ?? true,
+      bestseller: it.bestseller ?? false,
+      featured: it.bestseller ?? false,
+      rating: it.rating ?? ratingFor(id),
+      reviewCount: reviewCountFor(id),
+      tags: [
+        category,
+        categoryName,
+        isVeg ? "veg" : "non-veg",
+        ...(it.bestseller ? ["bestseller"] : []),
+      ].filter(Boolean),
+    };
+  });
+}
+
+// --- 1. Non-Veg Pickles (250g) ----------------------------------------------
+const NON_VEG_ITEMS: RawItem[] = [
+  {
+    name: "Chicken Pickle",
+    price: 245,
+    unit: 250,
+    bestseller: true,
+    originalPrice: 275,
+    rating: 4.8,
+  },
+  { name: "Boneless Chicken Pickle", price: 290, unit: 250 },
+  { name: "Country Chicken Pickle", price: 330, unit: 250, bestseller: true, rating: 4.9 },
+  { name: "Cashew Chicken Kheema", price: 310, unit: 250 },
+  { name: "Chicken Joint Biryani", price: 280, unit: 250 },
+  { name: "Mutton Pickle", price: 405, unit: 250, bestseller: true, rating: 4.8 },
+  { name: "Boneless Mutton Pickle", price: 455, unit: 250 },
+  { name: "Mutton Kheema Pickle", price: 455, unit: 250 },
+  { name: "Small Prawns Pickle", price: 370, unit: 250 },
+  { name: "Large Prawns Pickle", price: 410, unit: 250, bestseller: true, rating: 4.7 },
+  { name: "Murrel Fish (Boneless)", price: 395, unit: 250 },
+  { name: "Murrel Fish (Bone)", price: 360, unit: 250 },
+  { name: "Sea Bass Fish Pickle", price: 480, unit: 250 },
+  { name: "Crab Pickle", price: 310, unit: 250 },
+  { name: "Pond Fish Pickle", price: 295, unit: 250 },
+  { name: "White Bait Fish", price: 295, unit: 250 },
+  { name: "Apollo Fish Pickle", price: 385, unit: 250 },
+  { name: "Sorrel Chicken", price: 245, unit: 250 },
+  { name: "Sorrel Boneless Chicken", price: 290, unit: 250 },
+  { name: "Sorrel Country Chicken", price: 330, unit: 250 },
+  { name: "Sorrel Small Prawns", price: 370, unit: 250 },
+  { name: "Sorrel Large Prawns", price: 410, unit: 250 },
+  { name: "Sorrel Mutton", price: 405, unit: 250 },
+  { name: "Sorrel Boneless Mutton", price: 455, unit: 250 },
+  { name: "Sorrel Mutton Kheema", price: 455, unit: 250 },
+  { name: "Mutton Boti Pickle", price: 400, unit: 250 },
+  { name: "Mutton Boti Gongura Pickle", price: 400, unit: 250 },
+  { name: "Small Prawns Extra", price: 445, unit: 250 },
+  { name: "Large Prawns Extra", price: 480, unit: 250 },
+  { name: "Gongura Small Prawns Extra", price: 445, unit: 250 },
+  { name: "Gongura Large Prawns Extra", price: 480, unit: 250 },
+];
+
+// --- 2. Veg Pickles (250g) ---------------------------------------------------
+const VEG_ITEMS: RawItem[] = [
+  {
+    name: "Mango Avakaya Pickle",
+    price: 130,
+    unit: 250,
+    bestseller: true,
+    originalPrice: 149,
+    rating: 4.9,
+  },
+  { name: "Mango Biryani Pickle", price: 130, unit: 250 },
+  { name: "Jaggery Mango Pickle", price: 130, unit: 250 },
+  { name: "Ginger Mango Pickle", price: 130, unit: 250 },
+  { name: "Small Cut Mango Pickle", price: 130, unit: 250 },
+  { name: "Grated Mango Pickle", price: 130, unit: 250 },
+  { name: "Amla Pickle", price: 130, unit: 250 },
+  { name: "Grated Amla Pickle", price: 130, unit: 250 },
+  { name: "Ginger Pickle", price: 130, unit: 250 },
+  { name: "Garlic Pickle", price: 130, unit: 250, bestseller: true, rating: 4.7 },
+  { name: "Drumstick Pickle", price: 130, unit: 250 },
+  { name: "Lemon Pickle", price: 130, unit: 250 },
+  { name: "Tomato Pickle", price: 130, unit: 250 },
+  { name: "Tomato Red Chilli Pickle", price: 130, unit: 250 },
+  { name: "Tamarind Pickle", price: 130, unit: 250 },
+  { name: "Raw Tamarind Pickle", price: 130, unit: 250 },
+  { name: "Red Chilli Pickle", price: 130, unit: 250 },
+  { name: "Green Chilli Pickle", price: 130, unit: 250 },
+  { name: "Bitter Gourd Pickle", price: 130, unit: 250 },
+  { name: "Citron Pickle", price: 130, unit: 250 },
+  { name: "Brinjal Pickle", price: 130, unit: 250 },
+  { name: "Sorrel Leaves Pickle", price: 130, unit: 250, bestseller: true, rating: 4.8 },
+  { name: "Coriander Pickle", price: 130, unit: 250 },
+  { name: "Curry Leaves Pickle", price: 130, unit: 250 },
+  { name: "Mint Leaves Pickle", price: 130, unit: 250 },
+  { name: "Mixed Veg Pickle", price: 130, unit: 250 },
+  { name: "Mango Ginger Pickle", price: 130, unit: 250 },
+  { name: "Raw Banana Pickle", price: 130, unit: 250 },
+  { name: "Carrot Pickle", price: 130, unit: 250 },
+  { name: "Beetroot Pickle", price: 130, unit: 250 },
+  { name: "Raw Tamarind Red Chilli", price: 130, unit: 250 },
+  { name: "Drumstick Leaves Pickle", price: 130, unit: 250 },
+  { name: "Sorrel Red Chilli", price: 130, unit: 250 },
+  { name: "Cauliflower Pickle", price: 130, unit: 250 },
+  { name: "Veld Grape Pickle", price: 135, unit: 250 },
+  { name: "Elephant Foot Yam Pickle", price: 130, unit: 250 },
+  { name: "Broad Beans Pickle", price: 135, unit: 250 },
+];
+
+// --- 3. Karapodulu (100g) ----------------------------------------------------
+const KARAPODI_ITEMS: RawItem[] = [
+  { name: "Rice Karrapodi", price: 50, unit: 100 },
+  { name: "Idly Karrapodi", price: 50, unit: 100, bestseller: true, rating: 4.8 },
+  { name: "Toor Dal Karrapodi", price: 50, unit: 100 },
+  { name: "Drumstick Leaves Karrapodi", price: 59, unit: 100 },
+  { name: "Bitter Gourd Karrapodi", price: 50, unit: 100 },
+  { name: "Curry Leaves Karrapodi", price: 50, unit: 100 },
+  { name: "Sorrel Leaves Karrapodi", price: 47, unit: 100 },
+  { name: "Coriander Karrapodi", price: 47, unit: 100 },
+  { name: "Mint Leaves Karrapodi", price: 47, unit: 100 },
+  { name: "Groundnut Karrapodi", price: 50, unit: 100 },
+  { name: "Sesame Karrapodi", price: 55, unit: 100 },
+  { name: "Garlic Karrapodi", price: 50, unit: 100 },
+  { name: "Roasted Dal Karrapodi", price: 50, unit: 100 },
+  { name: "Nalleru Karrapodi", price: 57, unit: 100 },
+  { name: "Flax Seeds Karrapodi", price: 62, unit: 100 },
+  { name: "Dry Prawns Karrapodi", price: 59, unit: 100, isVeg: false },
+  { name: "Minapa Karrapodi", price: 47, unit: 100 },
+  { name: "Kobbari Karrapodi", price: 57, unit: 100 },
+  { name: "Amla Karrapodi", price: 49, unit: 100 },
+  { name: "Sonti Karrapodi", price: 47, unit: 100 },
+  { name: "Nalla Karam Podi", price: 47, unit: 100, bestseller: true, rating: 4.7 },
+];
+
+// --- 4. Vadiyalu (100g, Pumpkin at 250g) ------------------------------------
+const VADIYALU_ITEMS: RawItem[] = [
+  { name: "Rice Vadiyalu", price: 72, unit: 100, bestseller: true, rating: 4.6 },
+  { name: "Carrot Vadiyalu", price: 77, unit: 100 },
+  { name: "Beetroot Vadiyalu", price: 77, unit: 100 },
+  { name: "Tomato Vadiyalu", price: 77, unit: 100 },
+  { name: "Ragi Vadiyalu", price: 77, unit: 100 },
+  { name: "Drumstick Vadiyalu", price: 77, unit: 100 },
+  { name: "Curry Leaves Vadiyalu", price: 77, unit: 100 },
+  { name: "Mint Leaves Vadiyalu", price: 77, unit: 100 },
+  { name: "Coriander Vadiyalu", price: 77, unit: 100 },
+  { name: "Moong Dal Vadiyalu", price: 77, unit: 100 },
+  { name: "Urad Dal Vadiyalu", price: 77, unit: 100 },
+  { name: "Challa Mirchi", price: 67, unit: 100 },
+];
+const VADIYALU_ITEMS_250: RawItem[] = [{ name: "Pumpkin Vadiyalu", price: 240, unit: 250 }];
+
+// --- 5. Powders / Cooking Products ------------------------------------------
+const COOKING_POWDER_ITEMS_100: RawItem[] = [
+  { name: "Rasam Podi", price: 41, unit: 100 },
+  { name: "Sambar Podi", price: 41, unit: 100 },
+  { name: "Turmeric Powder", price: 41, unit: 100 },
+];
+const COOKING_POWDER_ITEMS_250: RawItem[] = [{ name: "Kura Karam", price: 125, unit: 250 }];
+
+// --- 6. Masalas (100g, prices estimated — not in source list) --------------
+const MASALA_ITEMS: RawItem[] = [
+  { name: "Chicken Masala", price: 199, unit: 100, bestseller: true, rating: 4.6 },
+  { name: "Mutton Masala", price: 219, unit: 100 },
+  { name: "Fish Masala", price: 189, unit: 100 },
+  { name: "Chicken Kebab Masala", price: 209, unit: 100 },
+  { name: "Masala Karam", price: 129, unit: 100 },
+];
+
+// --- 7. Spice Powders (100g, prices estimated — not in source list) --------
+const SPICE_POWDER_ITEMS: RawItem[] = [
+  { name: "Menthu Podi", price: 99, unit: 100 },
+  { name: "Dhaniya Podi", price: 119, unit: 100 },
+  { name: "Jeera Podi", price: 149, unit: 100 },
+];
+
+// --- 8. Cooking Pastes (250g; Tomato/Pudhina/Kothimeera prices estimated) --
+const PASTE_ITEMS: RawItem[] = [
+  { name: "Pulihora Paste", price: 239, unit: 250 },
+  { name: "Tomato Paste", price: 199, unit: 250 },
+  { name: "Pudhina Paste", price: 179, unit: 250 },
+  { name: "Kothimeera Paste", price: 179, unit: 250 },
+  { name: "Gongura Paste", price: 259, unit: 250 },
+  { name: "Ulavacharu", price: 389, unit: 250 },
+];
+
+// --- 9. Sweets & Premium Products -------------------------------------------
+const PREMIUM_ITEMS: RawItem[] = [
+  { name: "Putharekulu", price: 429, unit: 250, bestseller: true, originalPrice: 479, rating: 4.9 },
+  { name: "Pure Honey", price: 665, unit: 1000 },
+  { name: "Pure Ghee", price: 1025, unit: 1000 },
+  { name: "Dry Fruit Laddu", price: 328, unit: 500 },
+  { name: "Mamidi Thandra (Sugar)", price: 85, unit: 250 },
+  { name: "Bellam Mamidi Thandra", price: 85, unit: 250 },
+  { name: "Thati Thandra", price: 105, unit: 250 },
+];
+
+// --- 10. Sweets & Snacks ------------------------------------------------------
+const SWEETS_ITEMS: RawItem[] = [
+  {
+    name: "Ribbon Murukulu",
+    price: 76,
+    unit: 250,
+    bestseller: true,
+    originalPrice: 89,
+    rating: 4.7,
+  },
+  { name: "Dootha Pakodi", price: 76, unit: 250 },
+  { name: "Atukula Mixture", price: 76, unit: 250 },
+  { name: "Lavu Karapusa", price: 76, unit: 250 },
+  { name: "Sanna Karapusa", price: 76, unit: 250 },
+  { name: "Palli Pakodi", price: 80, unit: 250 },
+  { name: "Jantikalu", price: 76, unit: 250 },
+  { name: "Baru Murukulu", price: 76, unit: 250 },
+  { name: "Round Murukulu", price: 76, unit: 250 },
+  { name: "Challa Jantikalu", price: 76, unit: 250 },
+  { name: "Cornflakes Mixture", price: 76, unit: 250 },
+  { name: "Kara Boondi", price: 76, unit: 250 },
+  { name: "All Mixture", price: 76, unit: 250 },
+  { name: "Small Chegodilu", price: 76, unit: 250 },
+  { name: "Dal Mudi Mixture", price: 80, unit: 250 },
+  { name: "Masala Kabuli Chana", price: 96, unit: 250 },
+  { name: "Chekkalu", price: 76, unit: 250 },
+  { name: "Sanna Boondi Chikki", price: 84, unit: 250 },
+  { name: "Sweet Kommulu", price: 76, unit: 250 },
+  { name: "Gavvalu", price: 76, unit: 250 },
+  { name: "Gorumitlu (Sugar)", price: 76, unit: 250 },
+  { name: "Gorumitlu (Jaggery)", price: 80, unit: 250 },
+  { name: "Ariselu", price: 243, unit: 500, bestseller: true, rating: 4.8 },
+  { name: "Nuvvula Ariselu", price: 268, unit: 500 },
+  { name: "Sweet Boondi", price: 76, unit: 250 },
+  { name: "Nuvvula Chikki", price: 92, unit: 250 },
+  { name: "Palli Chikki", price: 88, unit: 250 },
+  { name: "Venna Golilu", price: 116, unit: 250 },
+  { name: "Urad Dal Laddu", price: 325, unit: 500 },
+  { name: "Coconut Laddu", price: 275, unit: 500 },
+  { name: "Ragi Laddu", price: 325, unit: 500 },
+];
+
+// --- 11. Bakery & Dry Fruits (new — prices estimated) -----------------------
+const PASTRY_CAKE_ITEM: RawItem[] = [{ name: "Pastry Cake", price: 350, unit: 500 }];
+const DRY_FRUITS_ITEM: RawItem[] = [{ name: "Dry Fruits", price: 599, unit: 250 }];
+
+export const products: Product[] = [
+  ...buildBlock("non-veg-pickles", "nv", nonVegImg, "standard", false, "non-veg", NON_VEG_ITEMS),
+  ...buildBlock("veg-pickles", "vp", vegImg, "standard", true, "veg", VEG_ITEMS),
+  ...buildBlock("karapodulu", "kp", podiImg, "podi", true, "karapodulu", KARAPODI_ITEMS),
+  ...buildBlock("vadiyalu", "vd", vadiyaluImg, "podi", true, "vadiyalu", VADIYALU_ITEMS),
+  ...buildBlock("vadiyalu", "vd", vadiyaluImg, "standard", true, "vadiyalu", VADIYALU_ITEMS_250),
+  ...buildBlock(
+    "cooking-powders",
+    "cw",
+    masalaImg,
+    "podi",
+    true,
+    "cooking-powders",
+    COOKING_POWDER_ITEMS_100,
+  ),
+  ...buildBlock(
+    "cooking-powders",
+    "cw",
+    masalaImg,
+    "standard",
+    true,
+    "cooking-powders",
+    COOKING_POWDER_ITEMS_250,
+  ),
+  ...buildBlock("masalas", "ms", masalaImg, "podi", true, "masalas", MASALA_ITEMS),
+  ...buildBlock("spice-powders", "sp", podiImg, "podi", true, "spice-powders", SPICE_POWDER_ITEMS),
+  ...buildBlock("cooking-pastes", "pa", pasteImg, "standard", true, "cooking-pastes", PASTE_ITEMS),
+  ...buildBlock(
+    "premium-sweets",
+    "pr",
+    sweetsImg,
+    "standard",
+    true,
+    "premium-sweets",
+    PREMIUM_ITEMS,
+  ),
+  ...buildBlock("sweets-snacks", "ss", sweetsImg, "standard", true, "sweets-snacks", SWEETS_ITEMS),
+  ...buildBlock("bakery-dry-fruits", "bk", sweetsImg, "cake", true, "bakery", PASTRY_CAKE_ITEM),
+  ...buildBlock("bakery-dry-fruits", "bk", sweetsImg, "standard", true, "bakery", DRY_FRUITS_ITEM),
+];
+
+export const categories: Category[] = categoriesBase.map((c) => ({
+  ...c,
+  count: products.filter((p) => p.category === c.slug).length,
+}));
 
 export const getProduct = (id: string) => products.find((p) => p.id === id);
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
