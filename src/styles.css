@@ -132,8 +132,16 @@
 
   html {
     /* Defensive baseline: no page should ever be able to scroll sideways,
-       regardless of any element that mis-measures its own width. */
-    overflow-x: hidden;
+       regardless of any element that mis-measures its own width.
+       IMPORTANT: this uses "clip", not "hidden". Per the CSS spec, if
+       overflow-x is "hidden" (or "auto"/"scroll"), the browser is forced to
+       silently convert overflow-y: visible into overflow-y: auto — turning
+       html/body into their own scroll container and breaking
+       position:sticky for any descendant (like the navbar) relative to the
+       real page scroll. "clip" does not trigger that forced conversion, so
+       vertical scrolling stays on the normal viewport and sticky works. */
+    overflow-x: clip;
+    overflow-y: visible;
     width: 100%;
   }
 
@@ -141,7 +149,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    overflow-x: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     width: 100%;
   }
 

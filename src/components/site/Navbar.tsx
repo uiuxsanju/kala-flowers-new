@@ -73,7 +73,7 @@ export function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 shadow-sm backdrop-blur">
       <div className="hidden bg-maroon-deep px-4 py-2 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-primary-foreground/90 sm:block">
         Authentic Homemade Flavours • Freshly Packed • Pan India Delivery
       </div>
@@ -147,15 +147,17 @@ export function Navbar() {
           </SheetContent>
         </Sheet>
 
-        <Link to="/" className="flex shrink-0 items-center gap-2.5">
+        <Link to="/" className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
           <img
             src={logo}
             alt="Kala Flavours — Homemade Foods"
-            className="h-11 w-11 shrink-0 rounded-full border border-border object-cover sm:h-12 sm:w-12"
+            className="h-10 w-10 shrink-0 rounded-full border border-border object-cover sm:h-12 sm:w-12 lg:h-14 lg:w-14"
           />
-          <span className="hidden flex-col leading-none sm:flex">
-            <span className="font-display text-lg font-bold text-primary">Kala Flavours</span>
-            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          <span className="flex min-w-0 flex-col justify-center leading-none">
+            <span className="truncate font-display text-base font-bold text-primary sm:text-lg">
+              Kala Flavours
+            </span>
+            <span className="hidden text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:block">
               Homemade With Love
             </span>
           </span>

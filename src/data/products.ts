@@ -16,7 +16,7 @@ import bakeryDryFruitsImg from "@/assets/cat-bakery-dry-fruits.webp";
 //   1. Convert the photo to .webp
 //   2. Name the file EXACTLY the product's name in PascalCase, no spaces:
 //        "Mutton Pickle"          -> MuttonPickle.webp
-//        "Chicken Joint Biryani"  -> ChickenJointBiryani.webp
+//
 //        "Murrel Fish (Boneless)" -> MurrelFishBoneless.webp
 //   3. Drop it in:  src/assets/products/
 // That's it — NO code change needed. import.meta.glob below scans that
@@ -829,7 +829,6 @@ const NON_VEG_ITEMS: RawItem[] = [
   { name: "Boneless Chicken Pickle", price: 290, unit: 250 },
   { name: "Country Chicken Pickle", price: 330, unit: 250, bestseller: true, rating: 4.9 },
   { name: "Cashew Chicken Kheema", price: 310, unit: 250 },
-  { name: "Chicken Joint Biryani", price: 280, unit: 250 },
   { name: "Mutton Pickle", price: 405, unit: 250, bestseller: true, rating: 4.8 },
   { name: "Boneless Mutton Pickle", price: 455, unit: 250 },
   { name: "Mutton Kheema Pickle", price: 455, unit: 250 },

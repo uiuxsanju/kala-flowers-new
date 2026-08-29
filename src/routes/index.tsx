@@ -1,15 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  BookOpen,
-  Heart,
-  Leaf,
-  MessageCircle,
-  Package,
-  Quote,
-  Star,
-  Truck,
-} from "lucide-react";
+import { ArrowRight, Heart, MessageCircle, Quote, Star } from "lucide-react";
 import founderImg from "@/assets/brand/founder-photo.jpg";
 import { bestsellers, categories } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -37,21 +27,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
-
-const whyChoose = [
-  {
-    icon: BookOpen,
-    title: "Authentic Recipes",
-    text: "Traditional recipes passed through generations.",
-  },
-  {
-    icon: Leaf,
-    title: "Premium Ingredients",
-    text: "Carefully selected ingredients for authentic taste.",
-  },
-  { icon: Package, title: "Freshly Packed", text: "Every order is packed with care." },
-  { icon: Truck, title: "Delivered With Care", text: "Safe packaging and reliable delivery." },
-];
 
 const testimonials = [
   {
@@ -148,33 +123,6 @@ function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-secondary/50 py-14">
-        <span className="kolam-strip absolute inset-0 text-primary" aria-hidden="true" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center">
-            <span className="inline-flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-primary/70">
-              <span className="h-px w-8 bg-primary/40" />
-              Our Promise
-              <span className="h-px w-8 bg-primary/40" />
-            </span>
-            <h2 className="mt-3 font-display text-2xl font-bold sm:text-3xl">
-              Why Choose Kala Flavours?
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-y-10 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 lg:divide-x lg:divide-primary/15">
-            {whyChoose.map((t) => (
-              <div key={t.title} className="flex flex-col items-center px-4 text-center">
-                <span className="grid size-16 place-items-center rounded-full border-2 border-gold bg-gold-gradient text-gold-foreground shadow-warm">
-                  <t.icon className="size-7" />
-                </span>
-                <p className="mt-4 font-display text-lg font-semibold">{t.title}</p>
-                <p className="mt-1.5 text-sm text-muted-foreground">{t.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6">
         <h2 className="font-display text-2xl font-bold sm:text-3xl">Shop Our Categories</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -220,7 +168,6 @@ function Home() {
           ))}
         </div>
       </section>
-
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
         <h2 className="text-center font-display text-2xl font-bold sm:text-3xl">
