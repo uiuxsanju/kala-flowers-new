@@ -7,12 +7,7 @@ import masalaImg from "@/assets/cat-masala.webp";
 import pasteImg from "@/assets/cat-paste.webp";
 import cookingPowdersImg from "@/assets/cat-cooking-powders.webp";
 import premiumSweetsImg from "@/assets/cat-premium-sweets.webp";
-// TEMPORARY: these 2 lines are commented out until the real photo files
-// exist in src/assets/. Once you add cat-spice-powders.webp and
-// cat-bakery-dry-fruits.webp, uncomment these 2 lines AND the matching
-// "image:" lines further down in categoriesBase.
-// import spicePowdersImg from "@/assets/cat-spice-powders.webp";
-// import bakeryDryFruitsImg from "@/assets/cat-bakery-dry-fruits.webp";
+import bakeryDryFruitsImg from "@/assets/cat-bakery-dry-fruits.webp";
 
 // ---------------------------------------------------------------------------
 // PRODUCT IMAGES — auto-loaded from src/assets/products/*.webp
@@ -124,7 +119,7 @@ const categoriesBase: Omit<Category, "count">[] = [
   },
   {
     slug: "sweets-snacks",
-    name: "Sweets & Snacks",
+    name: "Homemade Snacks",
     image: sweetsImg,
     blurb: "Festive murukku, mixture, chikki and laddus",
   },
@@ -133,12 +128,6 @@ const categoriesBase: Omit<Category, "count">[] = [
     name: "Masalas",
     image: masalaImg,
     blurb: "Freshly roasted blends for curries and fries",
-  },
-  {
-    slug: "spice-powders",
-    name: "Spice Powders",
-    image: podiImg, // TEMP: was spicePowdersImg — restore once cat-spice-powders.webp exists
-    blurb: "Single-origin, unadulterated pure spice",
   },
   {
     slug: "cooking-pastes",
@@ -155,7 +144,7 @@ const categoriesBase: Omit<Category, "count">[] = [
   {
     slug: "bakery-dry-fruits",
     name: "Bakery & Dry Fruits",
-    image: sweetsImg, // TEMP: was bakeryDryFruitsImg — restore once cat-bakery-dry-fruits.webp exists
+    image: bakeryDryFruitsImg,
     blurb: "Fresh bakes and premium dry fruit gifting boxes",
   },
 ];
@@ -269,7 +258,7 @@ const TELUGU_WORD_MAP: Record<string, string> = {
   white: "తెలుపు",
   bait: "బెయిట్",
   apollo: "అపోలో",
-  sorrel: "గోంగూర",
+  Gongura: "గోంగూర",
   boti: "బోటి",
   gongura: "గోంగూర",
   extra: "ఎక్స్ట్రా",
@@ -464,7 +453,7 @@ function describeNonVeg(name: string): string {
     n.includes("pond")
   )
     protein = "Fresh fish";
-  const gongura = n.includes("sorrel") || n.includes("gongura");
+  const gongura = n.includes("gongura") || n.includes("Gongura");
   const kheema = n.includes("kheema");
   const boti = n.includes("boti");
   const boneless = n.includes("boneless");
@@ -499,7 +488,7 @@ function ingredientsNonVeg(name: string): string {
     n.includes("pond")
   )
     protein = "Fish";
-  const gongura = n.includes("sorrel") || n.includes("gongura") ? ", gongura leaves" : "";
+  const gongura = n.includes("Gongura") || n.includes("gongura") ? ", gongura leaves" : "";
   return `${protein}, sesame oil, red chilli${gongura}, garlic, ginger, mustard, fenugreek, salt.`;
 }
 
@@ -519,7 +508,7 @@ const VEG_CORE_MAP: [string, string][] = [
   ["bitter gourd", "Bitter gourd"],
   ["citron", "Citron"],
   ["brinjal", "Brinjal"],
-  ["sorrel", "Sun-dried gongura leaves"],
+  ["Gongura", "Sun-dried gongura leaves"],
   ["coriander", "Fresh coriander"],
   ["curry leaves", "Curry leaves"],
   ["mint", "Mint leaves"],
@@ -853,14 +842,14 @@ const NON_VEG_ITEMS: RawItem[] = [
   { name: "Pond Fish Pickle", price: 295, unit: 250 },
   { name: "White Bait Fish", price: 295, unit: 250 },
   { name: "Apollo Fish Pickle", price: 385, unit: 250 },
-  { name: "Sorrel Chicken", price: 245, unit: 250 },
-  { name: "Sorrel Boneless Chicken", price: 290, unit: 250 },
-  { name: "Sorrel Country Chicken", price: 330, unit: 250 },
-  { name: "Sorrel Small Prawns", price: 370, unit: 250 },
-  { name: "Sorrel Large Prawns", price: 410, unit: 250 },
-  { name: "Sorrel Mutton", price: 405, unit: 250 },
-  { name: "Sorrel Boneless Mutton", price: 455, unit: 250 },
-  { name: "Sorrel Mutton Kheema", price: 455, unit: 250 },
+  { name: "Gongura Chicken", price: 245, unit: 250 },
+  { name: "Gongura Boneless Chicken", price: 290, unit: 250 },
+  { name: "Gongura Country Chicken", price: 330, unit: 250 },
+  { name: "Gongura Small Prawns", price: 370, unit: 250 },
+  { name: "Gongura Large Prawns", price: 410, unit: 250 },
+  { name: "Gongura Mutton", price: 405, unit: 250 },
+  { name: "Gongura Boneless Mutton", price: 455, unit: 250 },
+  { name: "Gongura Mutton Kheema", price: 455, unit: 250 },
   { name: "Mutton Boti Pickle", price: 400, unit: 250 },
   { name: "Mutton Boti Gongura Pickle", price: 400, unit: 250 },
   { name: "Small Prawns Extra", price: 445, unit: 250 },
@@ -899,7 +888,7 @@ const VEG_ITEMS: RawItem[] = [
   { name: "Bitter Gourd Pickle", price: 130, unit: 250 },
   { name: "Citron Pickle", price: 130, unit: 250 },
   { name: "Brinjal Pickle", price: 130, unit: 250 },
-  { name: "Sorrel Leaves Pickle", price: 130, unit: 250, bestseller: true, rating: 4.8 },
+  { name: "Gongura Pickle", price: 130, unit: 250, bestseller: true, rating: 4.8 },
   { name: "Coriander Pickle", price: 130, unit: 250 },
   { name: "Curry Leaves Pickle", price: 130, unit: 250 },
   { name: "Mint Leaves Pickle", price: 130, unit: 250 },
@@ -910,7 +899,7 @@ const VEG_ITEMS: RawItem[] = [
   { name: "Beetroot Pickle", price: 130, unit: 250 },
   { name: "Raw Tamarind Red Chilli", price: 130, unit: 250 },
   { name: "Drumstick Leaves Pickle", price: 130, unit: 250 },
-  { name: "Sorrel Red Chilli", price: 130, unit: 250 },
+  { name: "Gongura Red Chilli", price: 130, unit: 250 },
   { name: "Cauliflower Pickle", price: 130, unit: 250 },
   { name: "Veld Grape Pickle", price: 130, unit: 250 },
   { name: "Elephant Foot Yam Pickle", price: 130, unit: 250 },
@@ -925,7 +914,7 @@ const KARAPODI_ITEMS: RawItem[] = [
   { name: "Drumstick Leaves Karappodi", price: 59, unit: 100 },
   { name: "Bitter Gourd Karappodi", price: 50, unit: 100 },
   { name: "Curry Leaves Karappodi", price: 50, unit: 100 },
-  { name: "Sorrel Leaves Karappodi", price: 47, unit: 100 },
+  { name: "Gongura Leaves Karappodi", price: 47, unit: 100 },
   { name: "Coriander Karappodi", price: 47, unit: 100 },
   { name: "Mint Leaves Karappodi", price: 47, unit: 100 },
   { name: "Groundnut Karappodi", price: 50, unit: 100 },
@@ -978,14 +967,7 @@ const MASALA_ITEMS: RawItem[] = [
 ];
 const MASALA_ITEMS_250: RawItem[] = [{ name: "Masala Karam", price: 130, unit: 250 }];
 
-// --- 7. Spice Powders (250g) -------------------------------------------------
-const SPICE_POWDER_ITEMS: RawItem[] = [
-  { name: "Menthu Podi", price: 100, unit: 250 },
-  { name: "Dhaniya Podi", price: 90, unit: 250 },
-  { name: "Jeera Podi", price: 120, unit: 250 },
-];
-
-// --- 8. Cooking Pastes (250g, Ulavacharu 500ml) ------------------------------
+// --- 7. Cooking Pastes (250g, Ulavacharu 500ml) ------------------------------
 const PASTE_ITEMS: RawItem[] = [
   { name: "Pulihora Paste", price: 110, unit: 250 },
   { name: "Tomato Paste", price: 90, unit: 250 },
@@ -995,7 +977,7 @@ const PASTE_ITEMS: RawItem[] = [
 ];
 const PASTE_ITEMS_500: RawItem[] = [{ name: "Ulavacharu", price: 180, unit: 500 }];
 
-// --- 9. Sweets & Premium Products -------------------------------------------
+// --- 8. Sweets & Premium Products -------------------------------------------
 const PREMIUM_ITEMS: RawItem[] = [
   { name: "Putharekulu", price: 120, unit: 250, bestseller: true, rating: 4.9 },
   { name: "Mamidi Thandra (Sugar)", price: 85, unit: 250 },
@@ -1008,7 +990,7 @@ const PREMIUM_ITEMS_1000: RawItem[] = [
   { name: "Pure Ghee", price: 1075, unit: 1000 },
 ];
 
-// --- 10. Sweets & Snacks ------------------------------------------------------
+// --- 9. Sweets & Snacks ------------------------------------------------------
 const SWEETS_ITEMS: RawItem[] = [
   {
     name: "Ribbon Murukulu",
@@ -1052,8 +1034,8 @@ const SWEETS_ITEMS_500: RawItem[] = [
   { name: "Ragi Laddu", price: 325, unit: 500 },
 ];
 
-// --- 11. Bakery & Dry Fruits --------------------------------------------------
-const PASTRY_CAKE_ITEM: RawItem[] = [{ name: "Pastry Cake", price: 80, unit: 500 }];
+// --- 10. Bakery & Dry Fruits --------------------------------------------------
+const PASTRY_CAKE_ITEM: RawItem[] = [{ name: "Pastry Cake", price: 500, unit: 500 }];
 const DRY_FRUITS_ITEM: RawItem[] = [{ name: "Dry Fruits", price: 300, unit: 250 }];
 
 export const products: Product[] = [
@@ -1073,7 +1055,6 @@ export const products: Product[] = [
   ),
   ...buildBlock("masalas", "ms", "podi", true, "masalas", MASALA_ITEMS),
   ...buildBlock("masalas", "ms", "standard", true, "masalas", MASALA_ITEMS_250),
-  ...buildBlock("spice-powders", "sp", "standard", true, "spice-powders", SPICE_POWDER_ITEMS),
   ...buildBlock("cooking-pastes", "pa", "standard", true, "cooking-pastes", PASTE_ITEMS),
   ...buildBlock("cooking-pastes", "pa", "cake", true, "cooking-pastes", PASTE_ITEMS_500),
   ...buildBlock("premium-sweets", "pr", "standard", true, "premium-sweets", PREMIUM_ITEMS),

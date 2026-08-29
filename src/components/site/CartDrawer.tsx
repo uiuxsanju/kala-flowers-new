@@ -75,7 +75,7 @@ export function CartDrawer() {
             <div className="space-y-3 border-t border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Subtotal</span>
-                <span className="font-display text-xl font-bold text-primary">
+                <span className="font-sans text-xl font-semibold text-foreground">
                   {formatINR(subtotal)}
                 </span>
               </div>

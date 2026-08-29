@@ -47,12 +47,12 @@ function CarouselCard({ product }: { product: Product }) {
               params={{ productId: product.id }}
               className="line-clamp-1 font-display text-[15px] font-semibold hover:text-primary"
             >
-              {product.name}
+              {product.name} <span className="font-normal">({product.nameTelugu})</span>
             </Link>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">{variant.label}</p>
           <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-            <span className="font-display text-lg font-bold text-primary">
+            <span className="font-sans text-lg font-semibold text-foreground">
               {formatINR(variant.price)}
             </span>
             <Button

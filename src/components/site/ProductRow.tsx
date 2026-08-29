@@ -42,7 +42,7 @@ export function ProductRow({ product }: { product: Product }) {
         <div className="flex flex-wrap items-center gap-2">
           <VegBadge isVeg={product.isVeg} />
           <span className="font-display text-[15px] font-semibold leading-snug">
-            {product.name}
+            {product.name} <span className="font-normal">({product.nameTelugu})</span>
           </span>
           {product.bestseller && (
             <span className="rounded-full bg-gold-gradient px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold-foreground">
@@ -55,7 +55,6 @@ export function ProductRow({ product }: { product: Product }) {
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground/80">{product.nameTelugu}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">{variant.label}</p>
         <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
           {product.shortDescription}
@@ -85,11 +84,11 @@ export function ProductRow({ product }: { product: Product }) {
       {/* Price + quantity + add-to-cart */}
       <div className="flex items-center justify-between gap-2 border-t border-border pt-3 sm:justify-end sm:gap-5 sm:border-t-0 sm:pt-0">
         <div className="flex shrink-0 flex-col items-start sm:w-20 sm:items-end">
-          <span className="font-display text-base font-bold text-primary sm:text-lg">
+          <span className="font-sans text-base font-semibold text-foreground sm:text-lg">
             {formatINR(variant.price)}
           </span>
           {product.originalPrice && variant.label === product.variants[0]?.label && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className="font-sans text-xs text-muted-foreground line-through">
               {formatINR(product.originalPrice)}
             </span>
           )}

@@ -226,7 +226,7 @@ function CheckoutPage() {
             </div>
             <div className="flex items-center justify-between border-t border-border pt-2">
               <span className="font-display text-base font-semibold">Total</span>
-              <span className="font-display text-xl font-bold text-primary">
+              <span className="font-sans text-xl font-semibold text-foreground">
                 {formatINR(total)}
               </span>
             </div>

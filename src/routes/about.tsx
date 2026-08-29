@@ -1,20 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import heroImg from "@/assets/hero-pickles.webp";
+import { Heart } from "lucide-react";
+import founderImg from "@/assets/brand/founder-photo.jpg";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "Our Story — Kala Flavours" },
+      { title: "Founder Story — Kala Flavours" },
       {
         name: "description",
         content:
-          "How Kala Flavours grew from one kitchen in Hyderabad into small-batch Andhra pickles, masalas and snacks shipped across India.",
+          "How Kala Flavours began in Visakhapatnam in 2015 — homemade Andhra pickles, masalas and snacks made the way they're made at home.",
       },
-      { property: "og:title", content: "Our Story — Kala Flavours" },
+      { property: "og:title", content: "Founder Story — Kala Flavours" },
       {
         property: "og:description",
-        content:
-          "Authentic taste, homemade tradition — small-batch Andhra flavours made the way they were made at home.",
+        content: "2015లో విశాఖపట్నంలో మొదలైన Kala Flavours రుచుల ప్రయాణం.",
       },
     ],
   }),
@@ -25,43 +25,38 @@ function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-        Our Story
+        Founder Story
       </span>
-      <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl">
-        Authentic Taste. Homemade Tradition.
+      <h1 className="mt-2 font-display text-2xl font-bold leading-tight sm:text-3xl">
+        2015లో విశాఖపట్నంలో మొదలైన Kala Flavours రుచుల ప్రయాణం.
       </h1>
-      <p className="mt-4 text-muted-foreground">
-        Kala Flavours began in 1998 with one steel drum of mango avakaya on a Hyderabad terrace.
-        Neighbours asked for a jar, then their relatives did, and the recipe never changed.
-      </p>
+
       <img
-        src={heroImg}
-        alt="Jars of Andhra pickles on a table"
-        className="mt-8 w-full rounded-2xl object-cover shadow-warm"
+        src={founderImg}
+        alt="Founder of Kala Flavours, homemade with love in Visakhapatnam"
+        className="mx-auto mt-8 h-[380px] w-full max-w-sm rounded-2xl object-cover shadow-warm sm:h-[420px]"
       />
-      <div className="prose mt-8 max-w-none space-y-4 text-muted-foreground">
+
+      <div className="prose mt-8 max-w-none space-y-4 text-base leading-relaxed text-muted-foreground">
         <p>
-          Every batch still starts the same way — raw mangoes from Nuzvid, guntur chillies ground on
-          stone, and cold-pressed sesame oil. Nothing is machine-mixed and nothing carries a
-          preservative.
+          ఇంటి వంటలో ఉండే ఆప్యాయతను, అమ్మ చేతి పచ్చళ్లలో ఉండే అసలైన రుచిని ప్రతి ఇంటికీ అందించాలనే
+          ఆలోచనతో Kala Flavours ప్రయాణం మొదలైంది.
         </p>
         <p>
-          We cook to order through the season, so the jar you receive is usually less than a week
-          old. Orders are confirmed on WhatsApp because most of our customers prefer talking to a
-          person about what suits their household.
+          నాణ్యమైన పదార్థాలతో, సంప్రదాయ పద్ధతుల్లో, ఇంట్లో చేసినట్టే పచ్చళ్లు మరియు ఆంధ్ర వంటకాల
+          రుచులను ఎంతో ప్రేమతో తయారు చేస్తున్నాము.
         </p>
+        <p>మా కోసం ప్రతి పచ్చడి ఒక వంటకం మాత్రమే కాదు — ఇంటి జ్ఞాపకం, మన సంప్రదాయం, మన రుచి.</p>
       </div>
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
-        {[
-          { k: "28 yrs", v: "of the same recipes" },
-          { k: "150+", v: "products across 10 categories" },
-          { k: "40k+", v: "jars shipped across India" },
-        ].map((s) => (
-          <div key={s.k} className="rounded-xl border border-border bg-card p-5 text-center">
-            <p className="font-display text-2xl font-bold text-primary">{s.k}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{s.v}</p>
-          </div>
-        ))}
+
+      <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center shadow-warm sm:p-8">
+        <p className="font-display text-lg text-foreground sm:text-xl">
+          విశాఖపట్నం నుంచి మీ ఇంటి వరకు…
+        </p>
+        <p className="mt-2 font-display text-xl font-bold text-primary sm:text-2xl">
+          ఇదే మా Kala Flavours.{" "}
+          <Heart className="inline size-5 fill-primary text-primary" aria-hidden="true" />
+        </p>
       </div>
     </div>
   );

@@ -1,16 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BookOpen,
-  Leaf,
   MessageCircle,
-  Package,
   Quote,
   Star,
-  Truck,
 } from "lucide-react";
-import heroImg from "@/assets/hero-pickles.webp";
-import { bestsellers, categories, products } from "@/data/products";
+import { bestsellers, categories } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ProductCarousel } from "@/components/site/ProductCarousel";
 import { HeroCarousel } from "@/components/site/HeroCarousel";
@@ -37,21 +32,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const whyChoose = [
-  {
-    icon: BookOpen,
-    title: "Authentic Recipes",
-    text: "Traditional recipes passed through generations.",
-  },
-  {
-    icon: Leaf,
-    title: "Premium Ingredients",
-    text: "Carefully selected ingredients for authentic taste.",
-  },
-  { icon: Package, title: "Freshly Packed", text: "Every order is packed with care." },
-  { icon: Truck, title: "Delivered With Care", text: "Safe packaging and reliable delivery." },
-];
-
 const testimonials = [
   {
     quote: "Absolutely loved the mango avakaya. It tastes just like homemade pickle.",
@@ -71,7 +51,10 @@ const testimonials = [
 ];
 
 function Home() {
-  const favourites = bestsellers.length >= 8 ? bestsellers.slice(0, 8) : products.slice(0, 8);
+  const pickleBestsellers = bestsellers.filter(
+    (p) => p.category === "veg-pickles" || p.category === "non-veg-pickles",
+  );
+  const favourites = pickleBestsellers.slice(0, 8);
 
   return (
     <div>
@@ -85,6 +68,9 @@ function Home() {
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight sm:text-5xl">
               Authentic Flavours of Andhra
             </h1>
+            <p className="mt-2 font-display text-lg italic text-accent sm:text-xl">
+              ఆంధ్ర రుచి మన ఇంట్లో
+            </p>
             <p className="mt-4 max-w-lg text-primary-foreground/85">
               Traditional recipes, homemade goodness and unforgettable taste — pickles, masalas and
               snacks cooked in small batches with cold-pressed sesame oil and stone-ground spices.
@@ -104,7 +90,7 @@ function Home() {
                 <Link to="/shop">Explore Categories</Link>
               </Button>
               <Button size="lg" className="bg-[#25D366] text-white hover:bg-[#25D366]/90" asChild>
-                <a
+                
                   href={buildWhatsAppUrl("Hello, I am interested in ordering your products.")}
                   target="_blank"
                   rel="noreferrer"
@@ -138,26 +124,6 @@ function Home() {
         </div>
         <div className="mt-6">
           <ProductCarousel products={favourites} />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <h2 className="text-center font-display text-2xl font-bold sm:text-3xl">
-          Why Choose Kala Flavours?
-        </h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {whyChoose.map((t) => (
-            <div
-              key={t.title}
-              className="card-lift rounded-xl border border-border bg-card p-5 text-center shadow-warm"
-            >
-              <span className="mx-auto grid size-12 place-items-center rounded-full bg-secondary text-primary">
-                <t.icon className="size-6" />
-              </span>
-              <p className="mt-3 font-display text-base font-semibold">{t.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t.text}</p>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -208,34 +174,6 @@ function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <img
-            src={heroImg}
-            alt="Traditional Andhra kitchen preparing pickles"
-            className="w-full rounded-2xl object-cover shadow-warm"
-          />
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-              Our Story
-            </span>
-            <h2 className="mt-3 font-display text-2xl font-bold sm:text-3xl">
-              Rooted in tradition, made with love
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Born from a love for traditional Indian flavours, Kala Flavours brings the taste of
-              homemade Andhra kitchens to your doorstep. Every product is prepared with authentic
-              recipes, carefully selected ingredients and the warmth of traditional cooking.
-            </p>
-            <Button className="mt-6" variant="outline" asChild>
-              <Link to="/about">
-                Know Our Story <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
         <h2 className="text-center font-display text-2xl font-bold sm:text-3xl">
           What Our Customers Say
         </h2>
@@ -280,7 +218,7 @@ function Home() {
             className="shrink-0 bg-[#25D366] text-white hover:bg-[#25D366]/90"
             asChild
           >
-            <a
+            
               href={buildWhatsAppUrl("Hello, I am interested in ordering your products.")}
               target="_blank"
               rel="noreferrer"

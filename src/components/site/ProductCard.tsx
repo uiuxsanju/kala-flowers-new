@@ -35,22 +35,28 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         to="/product/$productId"
         params={{ productId: product.id }}
-        className={cn(
-          "relative flex h-16 items-center justify-center overflow-hidden",
-          product.isVeg
-            ? "bg-gradient-to-br from-accent/25 via-accent/10 to-transparent"
-            : "bg-gradient-to-br from-primary/15 via-primary/5 to-transparent",
-        )}
+        className="relative block aspect-[4/3] overflow-hidden bg-secondary"
       >
-        <span className="kolam-strip absolute inset-0 text-primary" />
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          width={480}
+          height={360}
+          className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/40 via-black/10 to-transparent"
+        />
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {product.bestseller && (
-            <span className="rounded-full bg-gold-gradient px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-foreground">
+            <span className="rounded-full bg-gold-gradient px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-foreground shadow-warm">
               Bestseller
             </span>
           )}
           {product.discount && (
-            <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">
+            <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-warm">
               {product.discount}% off
             </span>
           )}
@@ -63,7 +69,7 @@ export function ProductCard({ product }: { product: Product }) {
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={wishlisted}
           className={cn(
-            "absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-card/90 shadow-warm transition-opacity",
+            "absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-card/90 shadow-warm backdrop-blur-sm transition-opacity",
             wishlisted
               ? "opacity-100"
               : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100",
@@ -77,22 +83,25 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </button>
         {!product.inStock && (
-          <span className="absolute inset-0 grid place-items-center bg-maroon-deep/60 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground">
+          <span className="absolute inset-0 grid place-items-center bg-maroon-deep/70 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground">
             Sold out
           </span>
         )}
       </Link>
+      <div aria-hidden="true" className="leaf-divider -mt-[1px] text-border/50" />
 
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <div className="flex items-start gap-2">
           <VegBadge isVeg={product.isVeg} />
-          <Link
-            to="/product/$productId"
-            params={{ productId: product.id }}
-            className="font-display text-[15px] font-semibold leading-snug hover:text-primary"
-          >
-            {product.name}
-          </Link>
+          <div className="min-w-0">
+            <Link
+              to="/product/$productId"
+              params={{ productId: product.id }}
+              className="font-display text-[15px] font-semibold leading-snug hover:text-primary"
+            >
+              {product.name} <span className="font-normal">({product.nameTelugu})</span>
+            </Link>
+          </div>
         </div>
         <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
           {product.shortDescription}
@@ -117,11 +126,11 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-4">
           <span className="flex flex-col">
-            <span className="font-display text-lg font-bold text-primary">
+            <span className="font-sans text-lg font-semibold text-foreground">
               {formatINR(variant.price)}
             </span>
             {product.discount && (
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="font-sans text-xs text-muted-foreground line-through">
                 {formatINR(product.originalPrice ?? 0)}
               </span>
             )}
@@ -155,7 +164,7 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="h-16 animate-pulse bg-secondary" />
+      <div className="aspect-[4/3] animate-pulse bg-secondary" />
       <div className="space-y-2 p-4">
         <div className="h-4 w-3/4 animate-pulse rounded bg-secondary" />
         <div className="h-3 w-full animate-pulse rounded bg-secondary" />

@@ -2,37 +2,33 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroImg from "@/assets/hero-pickles.webp";
 import posterImg from "@/assets/brand/kala-flavours-poster.jpg";
-import logoImg from "@/assets/brand/kala-flavours-logo.jpg";
+import portraitImg from "@/assets/brand/kala-flavours-portrait.jpg";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
-// Hero carousel — uses ONLY the three real brand images already in the
-// project (no generated/stock photos): the existing hero photo, the new
-// Kala Flavours poster, and the brand logo photo. Every slide is cropped
-// with object-fit: cover inside an identical, fixed-aspect frame so nothing
-// stretches or distorts — only object-position changes per image to keep
-// the jar/product/portrait centred in frame.
+// Hero carousel. Each slide keeps its own true aspect ratio via object-contain
+// (nothing is ever cropped or has text cut off), sitting inside a shared
+// widescreen frame filled with a warm maroon gradient + kolam dot texture so
+// the letterbox area around square/portrait slides reads as an intentional
+// framed-poster look rather than empty bars.
 // ---------------------------------------------------------------------------
 
 const SLIDES = [
   {
+    src: posterImg,
+    alt: "Kala Flavours — Traditional Andhra Pickles, made with love, served with pride",
+  },
+  {
     src: heroImg,
     alt: "Assorted Andhra pickles in glass jars with fresh spices",
-    position: "center",
   },
   {
-    src: posterImg,
-    alt: "Kala Flavours — traditional Andhra pickles, homemade with love",
-    position: "center",
-  },
-  {
-    src: logoImg,
-    alt: "Kala Flavours — homemade foods",
-    position: "center 28%",
+    src: portraitImg,
+    alt: "Kala Flavours — homemade foods, homemade with love",
   },
 ];
 
-const AUTO_SLIDE_MS = 4500;
+const AUTO_SLIDE_MS = 5000;
 
 export function HeroCarousel() {
   const [index, setIndex] = useState(0);
@@ -78,7 +74,7 @@ export function HeroCarousel() {
 
   return (
     <div
-      className="relative w-full touch-pan-y select-none overflow-hidden rounded-2xl shadow-lift"
+      className="relative w-full touch-pan-y select-none overflow-hidden rounded-2xl border border-primary-foreground/15 shadow-lift"
       onMouseEnter={() => {
         pausedRef.current = true;
       }}
@@ -88,19 +84,19 @@ export function HeroCarousel() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="relative aspect-[4/3] w-full">
+      <div className="relative aspect-video w-full bg-hero-gradient">
+        <span className="kolam-strip absolute inset-0 text-primary-foreground" aria-hidden="true" />
         {SLIDES.map((slide, i) => (
           <img
             key={slide.src}
             src={slide.src}
             alt={slide.alt}
-            width={1200}
-            height={900}
+            width={1280}
+            height={720}
             loading={i === 0 ? "eager" : "lazy"}
             draggable={false}
-            style={{ objectPosition: slide.position }}
             className={cn(
-              "absolute inset-0 size-full object-cover transition-opacity duration-700 ease-in-out",
+              "absolute inset-0 size-full object-contain transition-opacity duration-700 ease-in-out",
               i === index ? "opacity-100" : "pointer-events-none opacity-0",
             )}
           />

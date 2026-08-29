@@ -130,15 +130,16 @@ function ProductPage() {
             </span>
           </div>
           <h1 className="mt-2 font-display text-2xl font-bold sm:text-3xl">{product.name}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground/80">{product.nameTelugu}</p>
           <p className="mt-3 text-muted-foreground">{product.description}</p>
 
           <div className="mt-5 flex items-baseline gap-3">
-            <p className="font-display text-3xl font-bold text-primary">
+            <p className="font-sans text-3xl font-semibold text-foreground">
               {formatINR(variant.price)}
             </p>
             {product.discount && (
               <>
-                <p className="text-lg text-muted-foreground line-through">
+                <p className="font-sans text-lg text-muted-foreground line-through">
                   {formatINR(
                     Math.round((product.originalPrice ?? 0) * (variant.price / product.price)),
                   )}
