@@ -982,13 +982,19 @@ const PREMIUM_ITEMS: RawItem[] = [
   { name: "Mamidi Thandra (Sugar)", price: 85, unit: 250 },
   { name: "Bellam Mamidi Thandra", price: 85, unit: 250 },
   { name: "Thati Thandra", price: 105, unit: 250 },
+  { name: "Pure Honey", price: 170, unit: 250 },
+  { name: "Pure Ghee", price: 270, unit: 250 },
+  { name: "Sunnundalu", price: 150, unit: 250 },
+  { name: "Kobbari Undalu", price: 130, unit: 250 },
+  { name: "Ragi Undalu", price: 130, unit: 250 },
+  { name: "Palli Chekkilu", price: 110, unit: 250 },
+  { name: "Nuvvula Chekkilu", price: 110, unit: 250 },
 ];
 const PREMIUM_ITEMS_500: RawItem[] = [{ name: "Dry Fruit Laddu", price: 328, unit: 500 }];
 const PREMIUM_ITEMS_1000: RawItem[] = [
   { name: "Pure Honey", price: 665, unit: 1000 },
   { name: "Pure Ghee", price: 1075, unit: 1000 },
 ];
-
 // --- 9. Sweets & Snacks ------------------------------------------------------
 const SWEETS_ITEMS: RawItem[] = [
   {
@@ -1034,7 +1040,11 @@ const SWEETS_ITEMS_500: RawItem[] = [
 ];
 
 // --- 10. Bakery & Dry Fruits --------------------------------------------------
-const PASTRY_CAKE_ITEM: RawItem[] = [{ name: "Pastry Cake", price: 500, unit: 500 }];
+const PASTRY_CAKE_ITEM: RawItem[] = [
+  { name: "Pastry Cake - Vanilla", price: 500, unit: 500 },
+  { name: "Pastry Cake - Chocolate", price: 500, unit: 500 },
+  { name: "Pastry Cake - Butterscotch", price: 500, unit: 500 },
+];
 const DRY_FRUITS_ITEM: RawItem[] = [{ name: "Dry Fruits", price: 300, unit: 250 }];
 
 export const products: Product[] = [
