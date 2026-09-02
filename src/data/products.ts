@@ -8,6 +8,8 @@ import pasteImg from "@/assets/cat-paste.webp";
 import cookingPowdersImg from "@/assets/cat-cooking-powders.webp";
 import premiumSweetsImg from "@/assets/cat-premium-sweets.webp";
 import bakeryDryFruitsImg from "@/assets/cat-bakery-dry-fruits.webp";
+import premiumSpicesImg from "@/assets/cat-premium-spices.webp";
+
 
 // ---------------------------------------------------------------------------
 // PRODUCT IMAGES — auto-loaded from src/assets/products/*.webp
@@ -72,6 +74,7 @@ export type Product = {
   rating: number;
   reviewCount: number;
   tags: string[];
+  subCategory?: string; // optional filter within a category, e.g. "Biryani Spices" inside "premium-spices"
 };
 
 export type Category = {
@@ -147,7 +150,24 @@ const categoriesBase: Omit<Category, "count">[] = [
     image: bakeryDryFruitsImg,
     blurb: "Fresh bakes and premium dry fruit gifting boxes",
   },
+  {
+    slug: "premium-spices",
+    name: "Premium Spices",
+    image: premiumSpicesImg,
+    blurb: "Wholesale-grade whole spices, powders, dry fruits & herbs",
+  },
 ];
+
+// The 5 sub-categories shown as filters/tabs inside the Premium Spices
+// category page (not separate top-level category cards — there's only one
+// photo, cat-premium-spices.webp, for the whole section).
+export const PREMIUM_SPICES_SUBCATEGORIES = [
+  "Premium Whole Spices",
+  "Biryani Spices",
+  "Spice Powders",
+  "Dry Fruits & Seeds",
+  "Herbs & Special Ingredients",
+] as const;
 
 // ---------------------------------------------------------------------------
 // Weight-variant generation
@@ -1047,6 +1067,117 @@ const PASTRY_CAKE_ITEM: RawItem[] = [
 ];
 const DRY_FRUITS_ITEM: RawItem[] = [{ name: "Dry Fruits", price: 300, unit: 250 }];
 
+// ---------------------------------------------------------------------------
+// 11. Premium Spices Wholesale — 500g / 1kg pricing given directly (no
+// bulk-discount curve; wholesale rates are already close to linear).
+// Business contact for WhatsApp + Call, used across the whole Premium
+// Spices section:
+// ---------------------------------------------------------------------------
+export const PREMIUM_SPICES_CONTACT = "+91 77997 32444";
+export const PREMIUM_SPICES_WHATSAPP_NUMBER = "917799732444"; // wa.me format, no + or spaces
+
+type SpiceItem = {
+  name: string;
+  nameTelugu: string;
+  subCategory: (typeof PREMIUM_SPICES_SUBCATEGORIES)[number];
+  price1kg: number; // ₹ per kg (wholesale)
+  price500g: number; // ₹ per 500g (wholesale)
+  bestseller?: boolean;
+};
+
+// Prices entered exactly as quoted. Where the price sheet gave a range
+// (e.g. "₹920–960/kg"), the midpoint is used — edit price1kg / price500g
+// on any line below to update it later.
+const SPICE_ITEMS: SpiceItem[] = [
+  { name: "Elaichi 7mm", nameTelugu: "యలకులు", subCategory: "Premium Whole Spices", price1kg: 3800, price500g: 1900, bestseller: true },
+  { name: "Elaichi 7.5mm", nameTelugu: "యలకులు", subCategory: "Premium Whole Spices", price1kg: 4200, price500g: 2100 },
+  { name: "Elaichi 8+mm", nameTelugu: "యలకులు", subCategory: "Premium Whole Spices", price1kg: 4400, price500g: 2200, bestseller: true },
+  { name: "Cloves", nameTelugu: "లవంగాలు", subCategory: "Premium Whole Spices", price1kg: 940, price500g: 470 },
+  { name: "Black Pepper Kerala", nameTelugu: "మిరియాలు", subCategory: "Premium Whole Spices", price1kg: 920, price500g: 460, bestseller: true },
+  { name: "White Pepper", nameTelugu: "తెల్ల మిరియాలు", subCategory: "Premium Whole Spices", price1kg: 1350, price500g: 675 },
+  { name: "Jeera Premium", nameTelugu: "జీలకర్ర Premium", subCategory: "Premium Whole Spices", price1kg: 320, price500g: 160 },
+
+  { name: "Star Anise", nameTelugu: "అనాసపువ్వు", subCategory: "Biryani Spices", price1kg: 605, price500g: 303 },
+  { name: "Dalchini Chekka", nameTelugu: "దాల్చిన చెక్క", subCategory: "Biryani Spices", price1kg: 340, price500g: 170 },
+  { name: "Roll Dalchini", nameTelugu: "రోల్ దాల్చిన చెక్క", subCategory: "Biryani Spices", price1kg: 560, price500g: 280 },
+  { name: "Jajikaya", nameTelugu: "జాయికాయ", subCategory: "Biryani Spices", price1kg: 920, price500g: 460 },
+  { name: "Japatiri", nameTelugu: "జాతిపత్రి", subCategory: "Biryani Spices", price1kg: 2550, price500g: 1275 },
+  { name: "Marathi Moggu", nameTelugu: "మరటి మొగ్గు", subCategory: "Biryani Spices", price1kg: 330, price500g: 165 },
+  { name: "Black Elaichi", nameTelugu: "పెద్ద యలకులు", subCategory: "Biryani Spices", price1kg: 2100, price500g: 1050 },
+  { name: "Stone Flower", nameTelugu: "రాతిపువ్వు", subCategory: "Biryani Spices", price1kg: 600, price500g: 300 },
+  { name: "Sha Jeera", nameTelugu: "శహ జీరా", subCategory: "Biryani Spices", price1kg: 335, price500g: 168 },
+  { name: "Bay Leaf", nameTelugu: "తేజ పత్రి", subCategory: "Biryani Spices", price1kg: 220, price500g: 110 },
+
+  { name: "Kasturi Methi", nameTelugu: "కస్తూరి మెంతి", subCategory: "Herbs & Special Ingredients", price1kg: 370, price500g: 185 },
+  { name: "Dry Ginger", nameTelugu: "పొడి అల్లం", subCategory: "Herbs & Special Ingredients", price1kg: 380, price500g: 190 },
+  { name: "Daniyalu", nameTelugu: "ధనియాలు", subCategory: "Herbs & Special Ingredients", price1kg: 200, price500g: 100 },
+  { name: "Fennel Seeds", nameTelugu: "సోపు గింజలు", subCategory: "Herbs & Special Ingredients", price1kg: 200, price500g: 100 },
+  { name: "Sweet Sounf", nameTelugu: "తీపి సోపు గింజలు", subCategory: "Herbs & Special Ingredients", price1kg: 100, price500g: 50 },
+  { name: "Rose Petals", nameTelugu: "గులాబీ రేకులు", subCategory: "Herbs & Special Ingredients", price1kg: 780, price500g: 390 },
+
+  { name: "Poppy Seeds", nameTelugu: "గసగసాలు", subCategory: "Dry Fruits & Seeds", price1kg: 1700, price500g: 850 },
+  { name: "Watermelon Seeds Small", nameTelugu: "దోస పప్పు చిన్న", subCategory: "Dry Fruits & Seeds", price1kg: 420, price500g: 210 },
+  { name: "Watermelon Seeds Big", nameTelugu: "దోస పప్పు పెద్ద", subCategory: "Dry Fruits & Seeds", price1kg: 700, price500g: 350 },
+  { name: "Cashew JH", nameTelugu: "జీడిపప్పు JH", subCategory: "Dry Fruits & Seeds", price1kg: 760, price500g: 380 },
+  { name: "Cashew Whole", nameTelugu: "జీడిపప్పు హోల్", subCategory: "Dry Fruits & Seeds", price1kg: 800, price500g: 400, bestseller: true },
+
+  { name: "Dhania Powder", nameTelugu: "ధనియాల పొడి", subCategory: "Spice Powders", price1kg: 195, price500g: 98 },
+  { name: "Zeera Powder", nameTelugu: "జీలకర్ర పొడి", subCategory: "Spice Powders", price1kg: 400, price500g: 200 },
+  { name: "Garam Masala", nameTelugu: "గరం మసాలా", subCategory: "Spice Powders", price1kg: 750, price500g: 375, bestseller: true },
+  { name: "Chicken Masala", nameTelugu: "చికెన్ మసాలా", subCategory: "Spice Powders", price1kg: 750, price500g: 375 },
+  { name: "Biryani Masala", nameTelugu: "బిర్యానీ మసాలా", subCategory: "Spice Powders", price1kg: 750, price500g: 375, bestseller: true },
+  { name: "Coconut Powder", nameTelugu: "కొబ్బరి పొడి", subCategory: "Spice Powders", price1kg: 300, price500g: 150 },
+  { name: "Sambar Powder", nameTelugu: "సాంబార్ పొడి", subCategory: "Spice Powders", price1kg: 200, price500g: 100 },
+];
+
+const SPICE_SUBCATEGORY_BLURB: Record<(typeof PREMIUM_SPICES_SUBCATEGORIES)[number], string> = {
+  "Premium Whole Spices": "hand-sorted for size and aroma, straight from the source",
+  "Biryani Spices": "the essential whole spice for authentic dum biryani and rich curries",
+  "Spice Powders": "stone-ground fresh for deep, consistent flavour",
+  "Dry Fruits & Seeds": "cleaned, graded and packed for freshness",
+  "Herbs & Special Ingredients": "aromatic, freshly packed specialty ingredient",
+};
+
+function buildSpiceProducts(items: SpiceItem[]): Product[] {
+  const idPrefix = "sp";
+  const category = "premium-spices";
+  const categoryMeta = categoriesBase.find((c) => c.slug === category);
+  const categoryName = categoryMeta?.name ?? "";
+  const categoryImage = categoryMeta?.image ?? "";
+  return items.map((it) => {
+    const id = `${idPrefix}-${slugify(it.name)}`;
+    const variants: WeightVariant[] = [
+      { label: gramsLabel(500), price: it.price500g },
+      { label: gramsLabel(1000), price: it.price1kg },
+    ];
+    const description = `${it.name}, ${SPICE_SUBCATEGORY_BLURB[it.subCategory]}. Sold at wholesale rates — order by 500g or 1kg.`;
+    const autoFileName = `${toPascalFileName(it.name)}.webp`;
+    const productImage = productImageUrl(autoFileName) ?? categoryImage;
+    return {
+      id,
+      slug: id,
+      name: it.name,
+      nameTelugu: it.nameTelugu,
+      category,
+      subCategory: it.subCategory,
+      isVeg: true,
+      description,
+      shortDescription: description.split(". ")[0]!.replace(/\.$/, "") + ".",
+      ingredients: `100% ${it.name}, no additives.`,
+      price: variants[0]!.price,
+      variants,
+      image: productImage,
+      gallery: [productImage, productImage, productImage],
+      inStock: true,
+      bestseller: it.bestseller ?? false,
+      featured: it.bestseller ?? false,
+      rating: it.bestseller ? 4.8 : ratingFor(id),
+      reviewCount: reviewCountFor(id),
+      tags: [category, categoryName, it.subCategory, "veg", "wholesale", ...(it.bestseller ? ["bestseller"] : [])],
+    };
+  });
+}
+
 export const products: Product[] = [
   ...buildBlock("non-veg-pickles", "nv", "standard", false, "non-veg", NON_VEG_ITEMS),
   ...buildBlock("veg-pickles", "vp", "standard", true, "veg", VEG_ITEMS),
@@ -1073,6 +1204,7 @@ export const products: Product[] = [
   ...buildBlock("sweets-snacks", "ss", "cake", true, "sweets-snacks", SWEETS_ITEMS_500),
   ...buildBlock("bakery-dry-fruits", "bk", "cake", true, "bakery", PASTRY_CAKE_ITEM),
   ...buildBlock("bakery-dry-fruits", "bk", "standard", true, "bakery", DRY_FRUITS_ITEM),
+  ...buildSpiceProducts(SPICE_ITEMS),
 ];
 
 export const categories: Category[] = categoriesBase.map((c) => ({
@@ -1083,6 +1215,9 @@ export const categories: Category[] = categoriesBase.map((c) => ({
 export const getProduct = (id: string) => products.find((p) => p.id === id);
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
 export const productsByCategory = (slug: string) => products.filter((p) => p.category === slug);
+// For the Premium Spices tabs — e.g. productsBySubCategory("premium-spices", "Biryani Spices")
+export const productsBySubCategory = (slug: string, subCategory: string) =>
+  products.filter((p) => p.category === slug && p.subCategory === subCategory);
 export const bestsellers = products.filter((p) => p.bestseller);
 export const minPrice = Math.min(...products.map((p) => p.price));
 export const maxPrice = Math.max(...products.map((p) => p.price));
@@ -1103,3 +1238,13 @@ export const searchProducts = (q: string) => {
 };
 
 export const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
+// Build a wa.me deep link with a pre-filled message for a given product +
+// weight, so the WhatsApp Order button on each Premium Spices card can just
+// do: window.open(whatsAppOrderLink(product, variant), "_blank")
+export const whatsAppOrderLink = (productName: string, variantLabel: string, price: number) => {
+  const message = `Hi, I'd like to order ${productName} (${variantLabel}) - ${formatINR(price)}. Please confirm availability.`;
+  return `https://wa.me/${PREMIUM_SPICES_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+};
+
+export const callNowLink = () => `tel:${PREMIUM_SPICES_CONTACT.replace(/\s+/g, "")}`;

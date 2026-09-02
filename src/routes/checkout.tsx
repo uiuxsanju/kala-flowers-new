@@ -43,6 +43,14 @@ const EMPTY_FORM: FormState = {
 
 const DELIVERY_FEE = 0; // confirmed with the customer on WhatsApp before packing
 
+// UPI payment details — plain deep link only, no gateway, no backend, no
+// automatic "payment successful" verification (the customer confirms
+// payment with us separately, same as the existing WhatsApp order flow).
+const UPI_ID = "Q783938544@ybl";
+const UPI_PAYEE_NAME = "Kala Flavours";
+const buildUpiUrl = (amount: number) =>
+  `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&am=${amount}&cu=INR`;
+
 function Field({
   id,
   label,
@@ -74,7 +82,19 @@ function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [upiCopied, setUpiCopied] = useState(false);
   const total = subtotal + DELIVERY_FEE;
+
+  const copyUpiId = async () => {
+    try {
+      await navigator.clipboard.writeText(UPI_ID);
+      setUpiCopied(true);
+      toast.success("UPI ID copied");
+      setTimeout(() => setUpiCopied(false), 2000);
+    } catch {
+      toast.error("Couldn't copy — please copy the UPI ID manually");
+    }
+  };
 
   const update = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -231,6 +251,32 @@ function CheckoutPage() {
               </span>
             </div>
           </div>
+
+          <div className="space-y-3 rounded-lg border border-border bg-secondary/30 p-4">
+            <p className="font-display text-sm font-semibold">UPI Payment</p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Amount to pay</span>
+              <span className="font-semibold text-foreground">{formatINR(total)}</span>
+            </div>
+            <Button asChild variant="gold" className="w-full">
+              <a href={buildUpiUrl(total)}>Pay {formatINR(total)} with UPI</a>
+            </Button>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-card px-3 py-2">
+              <span className="truncate font-mono text-xs text-foreground">{UPI_ID}</span>
+              <button
+                type="button"
+                onClick={copyUpiId}
+                className="shrink-0 text-xs font-semibold text-primary hover:underline"
+              >
+                {upiCopied ? "Copied!" : "Copy UPI ID"}
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Opens your UPI app (Google Pay, PhonePe, Paytm, etc.) to complete payment. After
+              paying, please share the screenshot with us on WhatsApp to confirm your order.
+            </p>
+          </div>
+
           <Button type="submit" className="w-full" size="lg">
             <MessageCircle className="size-4" /> Place Order on WhatsApp
           </Button>
